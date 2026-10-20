@@ -11,7 +11,11 @@ from database import Database
 from validation import validate_event_input
 from services.ai_planner import generate_plan
 from services.budget_engine import calculate_budget_summary
-from services.timeline_engine import evaluate_task_status
+from services.timeline_engine import (
+    evaluate_task_status,
+    generate_day_of_run_of_show,
+    generate_predictive_insights
+)
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
@@ -143,6 +147,8 @@ def create_event():
         enriched_tasks = [evaluate_task_status(t) for t in full_plan["tasks"]]
         full_plan["tasks"] = enriched_tasks
         full_plan["budget_summary"] = budget_summary
+        full_plan["run_of_show"] = generate_day_of_run_of_show(full_plan["event"]["category"])
+        full_plan["predictive_insights"] = generate_predictive_insights(full_plan["event"])
 
         return jsonify({
             "success": True,
@@ -167,6 +173,8 @@ def get_event(event_id):
         enriched_tasks = [evaluate_task_status(t) for t in full_plan["tasks"]]
         full_plan["tasks"] = enriched_tasks
         full_plan["budget_summary"] = budget_summary
+        full_plan["run_of_show"] = generate_day_of_run_of_show(full_plan["event"]["category"])
+        full_plan["predictive_insights"] = generate_predictive_insights(full_plan["event"])
 
         return jsonify({"success": True, "data": full_plan})
     except Exception as e:
@@ -198,6 +206,8 @@ def update_event(event_id):
         budget_summary = calculate_budget_summary(full_plan["event"]["budget"], full_plan["budget"])
         full_plan["tasks"] = [evaluate_task_status(t) for t in full_plan["tasks"]]
         full_plan["budget_summary"] = budget_summary
+        full_plan["run_of_show"] = generate_day_of_run_of_show(full_plan["event"]["category"])
+        full_plan["predictive_insights"] = generate_predictive_insights(full_plan["event"])
 
         return jsonify({"success": True, "data": full_plan})
     except Exception as e:

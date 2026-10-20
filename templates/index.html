@@ -349,27 +349,74 @@
 
       <!-- TAB 2: TIMELINE & TASKS -->
       <div id="panelTimeline" class="tab-panel" role="tabpanel" aria-labelledby="tabTimeline" style="display: none;">
-        <div class="card">
-          <div class="card-header">
-            <div class="ch-left">
-              <h2 class="card-title">Chronological Milestones & Tasks</h2>
-              <p class="card-desc">Dates are dynamically calculated relative to your event date. Tasks flag overdue status automatically.</p>
+        
+        <!-- AI Predictive Bottleneck & Optimization Banner -->
+        <div id="predictiveBanner" class="card predictive-banner mb-lg">
+          <div class="pb-content">
+            <div class="pb-icon-well" aria-hidden="true">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
             </div>
-            <div class="ch-actions">
-              <button id="btnFilterPendingTasks" class="btn btn-ghost btn-sm active" data-filter="all">All</button>
-              <button id="btnFilterIncomplete" class="btn btn-ghost btn-sm" data-filter="pending">Pending</button>
-              <button id="btnFilterCompleted" class="btn btn-ghost btn-sm" data-filter="completed">Completed</button>
-              <button id="btnAddTask" class="btn btn-secondary btn-sm">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                Add Task
-              </button>
+            <div class="pb-text">
+              <div class="pb-header-row">
+                <span class="pb-title" id="pbTitle">Predictive Synthesis Engine</span>
+                <span class="badge badge-warning" id="pbStatus">Critical Path Monitored</span>
+              </div>
+              <p class="pb-desc" id="pbBottleneck">Analyzing timeline and vendor constraints...</p>
+              <div class="pb-tips-row">
+                <div class="pb-tip" id="pbSavingsTip">
+                  <strong>💡 Proactive Swap:</strong> <span id="pbSavingsText">Analyzing savings opportunities...</span>
+                </div>
+                <div class="pb-weather" id="pbWeatherTip">
+                  <strong>🌤️ Lighting & Weather:</strong> <span id="pbWeatherText">Optimal dusk sunset lock</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Timeline Grid: Milestones & Day-of Run of Show -->
+        <div class="timeline-layout-grid">
+          <!-- Left Column: Chronological Milestones -->
+          <div class="card timeline-main-col">
+            <div class="card-header">
+              <div class="ch-left">
+                <h2 class="card-title">Chronological Milestones & Tasks</h2>
+                <p class="card-desc">Calculated countdown milestones. Tasks automatically track overdue status.</p>
+              </div>
+              <div class="ch-actions">
+                <button id="btnFilterPendingTasks" class="btn btn-ghost btn-sm active" data-filter="all">All</button>
+                <button id="btnFilterIncomplete" class="btn btn-ghost btn-sm" data-filter="pending">Pending</button>
+                <button id="btnFilterCompleted" class="btn btn-ghost btn-sm" data-filter="completed">Completed</button>
+                <button id="btnAddTask" class="btn btn-secondary btn-sm">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                  Add Task
+                </button>
+              </div>
+            </div>
+
+            <div class="timeline-list" id="timelineTasksList">
+              <!-- Populated dynamically via app.js -->
             </div>
           </div>
 
-          <div class="timeline-list" id="timelineTasksList">
-            <!-- Populated dynamically via app.js -->
+          <!-- Right Column: Day-of Run of Show Preview -->
+          <div class="card run-of-show-col">
+            <div class="card-header">
+              <div class="ch-left">
+                <h2 class="card-title" style="font-size: 1.15rem;">Day-of Run of Show</h2>
+                <p class="card-desc">Hourly synchronized cue sheet</p>
+              </div>
+              <span class="badge badge-accent">Synchronized</span>
+            </div>
+
+            <p class="card-desc mb-md">Live sequenced micro-schedule automatically tuned to dusk lighting and ceremonial flow.</p>
+
+            <div class="run-of-show-track" id="runOfShowList">
+              <!-- Populated dynamically via app.js -->
+            </div>
           </div>
         </div>
+
       </div>
 
       <!-- TAB 3: VENDOR CHECKLIST -->

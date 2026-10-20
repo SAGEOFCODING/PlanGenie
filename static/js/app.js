@@ -91,6 +91,12 @@
 
     // Timeline Tab Elements
     timelineTasksList: document.getElementById('timelineTasksList'),
+    runOfShowList: document.getElementById('runOfShowList'),
+    pbTitle: document.getElementById('pbTitle'),
+    pbStatus: document.getElementById('pbStatus'),
+    pbBottleneck: document.getElementById('pbBottleneck'),
+    pbSavingsText: document.getElementById('pbSavingsText'),
+    pbWeatherText: document.getElementById('pbWeatherText'),
     btnAddTask: document.getElementById('btnAddTask'),
     filterButtons: [
       document.getElementById('btnFilterPendingTasks'),
@@ -761,6 +767,83 @@
       card.appendChild(btnDel);
 
       elements.timelineTasksList.appendChild(card);
+    });
+
+    // Render predictive insights and day-of run-of-show
+    renderPredictiveBanner();
+    renderRunOfShow();
+  }
+
+  function renderPredictiveBanner() {
+    if (!state.currentEvent) return;
+    const insights = state.currentEvent.predictive_insights;
+    if (!insights) return;
+    if (elements.pbTitle) elements.pbTitle.textContent = insights.title || 'Predictive Synthesis Engine';
+    if (elements.pbStatus) elements.pbStatus.textContent = insights.status || 'Critical Path Monitored';
+    if (elements.pbBottleneck) elements.pbBottleneck.textContent = insights.bottleneck || 'Timeline optimized.';
+    if (elements.pbSavingsText) elements.pbSavingsText.textContent = insights.savings_tip || 'Budget balanced.';
+    if (elements.pbWeatherText) elements.pbWeatherText.textContent = insights.weather_forecast || 'Optimal dusk sunset lock';
+  }
+
+  function renderRunOfShow() {
+    if (!state.currentEvent || !elements.runOfShowList) return;
+    const items = state.currentEvent.run_of_show || [];
+    elements.runOfShowList.replaceChildren();
+
+    if (items.length === 0) {
+      const empty = document.createElement('div');
+      empty.className = 'card-desc';
+      empty.style.padding = '1rem';
+      empty.textContent = 'Day-of schedule not available.';
+      elements.runOfShowList.appendChild(empty);
+      return;
+    }
+
+    items.forEach(item => {
+      const row = document.createElement('div');
+      row.className = 'ros-item';
+
+      const bullet = document.createElement('div');
+      bullet.className = `ros-bullet ${item.is_key ? 'key-event' : ''}`;
+      row.appendChild(bullet);
+
+      const body = document.createElement('div');
+      body.className = 'ros-body';
+
+      const topRow = document.createElement('div');
+      topRow.className = 'ros-top-row';
+
+      const time = document.createElement('span');
+      time.className = 'ros-time';
+      time.textContent = item.time;
+      topRow.appendChild(time);
+
+      const dur = document.createElement('span');
+      dur.className = 'ros-duration';
+      dur.textContent = item.duration;
+      topRow.appendChild(dur);
+
+      body.appendChild(topRow);
+
+      const title = document.createElement('span');
+      title.className = 'ros-title';
+      title.textContent = item.title;
+      body.appendChild(title);
+
+      const desc = document.createElement('p');
+      desc.className = 'ros-desc';
+      desc.textContent = item.description;
+      body.appendChild(desc);
+
+      if (item.is_key) {
+        const keyTag = document.createElement('span');
+        keyTag.className = 'ros-key-tag';
+        keyTag.textContent = '★ Key Moment';
+        body.appendChild(keyTag);
+      }
+
+      row.appendChild(body);
+      elements.runOfShowList.appendChild(row);
     });
   }
 

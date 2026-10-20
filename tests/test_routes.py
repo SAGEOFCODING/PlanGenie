@@ -59,6 +59,9 @@ class TestRoutes(unittest.TestCase):
         self.assertEqual(data["data"]["event"]["name"], "Kavya's 25th Birthday")
         self.assertTrue(len(data["data"]["budget"]) > 0)
         self.assertTrue(len(data["data"]["tasks"]) > 0)
+        self.assertIn("run_of_show", data["data"])
+        self.assertIn("predictive_insights", data["data"])
+        self.assertTrue(len(data["data"]["run_of_show"]) > 0)
 
     def test_create_event_invalid_missing_fields(self):
         response = self.client.post("/api/events", json={"name": ""})

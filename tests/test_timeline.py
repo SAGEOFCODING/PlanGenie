@@ -3,7 +3,12 @@ Unit tests for the timeline and task scheduling engine.
 """
 import unittest
 from datetime import date, timedelta
-from services.timeline_engine import generate_default_timeline, evaluate_task_status
+from services.timeline_engine import (
+    generate_default_timeline,
+    evaluate_task_status,
+    generate_day_of_run_of_show,
+    generate_predictive_insights
+)
 
 class TestTimelineEngine(unittest.TestCase):
     def test_tasks_generated_with_valid_dates(self):
@@ -46,6 +51,28 @@ class TestTimelineEngine(unittest.TestCase):
         }
         evaluated = evaluate_task_status(completed_task, current_date=today)
         self.assertFalse(evaluated["is_overdue"])
+
+    def test_generate_day_of_run_of_show(self):
+        categories = ["wedding", "birthday", "community"]
+        for cat in categories:
+            cue_sheet = generate_day_of_run_of_show(cat)
+            self.assertTrue(len(cue_sheet) >= 5)
+            # Must contain time, title, duration, description
+            for item in cue_sheet:
+                self.assertIn("time", item)
+                self.assertIn("title", item)
+                self.assertIn("duration", item)
+                self.assertIn("description", item)
+
+    def test_generate_predictive_insights(self):
+        categories = ["wedding", "birthday", "community"]
+        for cat in categories:
+            insights = generate_predictive_insights({"category": cat, "budget": 100000, "guests": 100, "currency": "INR"})
+            self.assertIn("title", insights)
+            self.assertIn("status", insights)
+            self.assertIn("bottleneck", insights)
+            self.assertIn("savings_tip", insights)
+            self.assertIn("weather_forecast", insights)
 
 if __name__ == "__main__":
     unittest.main()

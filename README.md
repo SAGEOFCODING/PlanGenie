@@ -270,11 +270,12 @@ OK
 
 ## 12. GitHub Repository Compliance
 
+- **Public Repository URL:** [https://github.com/SAGEOFCODING/PlanGenie](https://github.com/SAGEOFCODING/PlanGenie)
 - **Branch Count:** Exactly 1 branch (`main`).
-- **Repository Size:** Strictly below 10 MB (~250 KB total source code, lightweight custom CSS, zero heavy binary assets).
+- **Repository Size:** Strictly below 10 MB (~0.76 MB total repository size, zero heavy binary assets).
 - **Clean Repository:** Sensitive files (`.env`, `*.db`, `__pycache__`, virtual environments) are ignored by `.gitignore` and never committed.
-- **To Connect to a Public GitHub Repository:**
+- **Repository Visibility:** Public.
+- **Push Command:**
   ```bash
-  git remote add origin https://github.com/<your-username>/<your-repo-name>.git
   git push -u origin main
   ```

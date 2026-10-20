@@ -4,7 +4,7 @@ Provides RESTful APIs for event creation, AI plan generation, budget management,
 timeline task updates, vendor checklist tracking, and persistence.
 """
 import logging
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, Response, send_from_directory
 
 from config import Config
 from database import Database
@@ -35,8 +35,6 @@ def set_security_headers(response):
     response.headers["X-XSS-Protection"] = "1; mode=block"
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
     return response
-
-from flask import Response, send_from_directory
 
 # --- Error Handlers (Safe, non-leaking JSON responses) ---
 @app.errorhandler(400)

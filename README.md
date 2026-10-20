@@ -148,9 +148,12 @@ The application interface follows the **Terra ("Rooted Warmth")** design philoso
   - Very soft organic shadows (`0 4px 20px rgba(46, 50, 48, 0.06)`). Tonal layering preferred over harsh borders.
 - **Button & Card Rules:**
   - Buttons use large 12px rounded corners (`rounded-[12px]`) instead of pill shapes.
-  - Cards feature warm cream fills, 24px padding, and soft 12px rounded corners.
-- **Mobile Responsive Drawer:**
-  - Fixed sidebar automatically collapses on mobile viewports (< 1024px) with a touch-friendly hamburger drawer toggle.
+- **Terra Earthy Dark Mode ("Rooted Warmth"):**
+  - **Calm Forest Charcoal (`#181c19`):** Deep, organic background with espresso undertones (never sterile pitch black).
+  - **Elevated Surfaces (`#212622` / `#2a312b`):** Soft earthy containers for cards, inputs, and modals.
+  - **High-Contrast Botanical Accents:** Gentle sage green (`#6cb281`) and warm amber (`#ddc48d`).
+  - **Zero-FOUC Persistence:** Inline `<head>` script synchronizes instantly with `localStorage` and system `prefers-color-scheme`.
+  - **Accessible Toggle Button:** `#btnThemeToggle` in the top header switches modes with live toast telemetry.
 
 ---
 
@@ -174,12 +177,10 @@ challange-5/
 │   ├── budget_engine.py       # Integer money math, category distribution, spend warnings
 │   └── timeline_engine.py     # Relative deadline calculation, short-notice scaling, overdue checker
 ├── templates/
-│   ├── index.html             # Single-page application interface (Terra Design)
+│   ├── index.html             # Single-page application interface (Terra Design & Dark Mode)
 │   └── 404.html               # Custom 404 error page with breadcrumbs and Terra styling
 ├── static/
 │   ├── favicon.svg            # Terra botanical organic SVG emblem
-│   ├── css/
-│   │   └── style.css          # Print stylesheets and accessibility utilities
 │   ├── img/
 │   │   └── og-image.svg       # Social share Open Graph image (1200x630)
 │   └── js/

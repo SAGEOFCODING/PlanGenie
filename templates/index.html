@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PlanGenie — GenAI-Powered Event Planning Assistant</title>
+  <meta name="description" content="Plan weddings, birthdays, and community gatherings with intelligent budgets, timelines, vendor checklists, and personalized ideas.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+  <!-- Header / Navigation -->
+  <header class="app-header" role="banner">
+    <div class="header-inner">
+      <div class="brand">
+        <div class="brand-icon" aria-hidden="true">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <span class="brand-title">PlanGenie</span>
+          <span class="brand-badge">AI Assistant</span>
+        </div>
+      </div>
+
+      <nav class="header-actions" aria-label="Main Navigation">
+        <button id="btnNavNewEvent" class="btn btn-secondary btn-sm" aria-label="Create a new event plan">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          New Event
+        </button>
+        <button id="btnNavSavedEvents" class="btn btn-primary btn-sm" aria-label="View saved event plans">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+          Saved Events (<span id="savedEventsCount">0</span>)
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main Application Container -->
+  <main class="app-main" id="mainContent" role="main">
+    
+    <!-- SECTION 1: EVENT CREATION VIEW -->
+    <section id="viewCreateEvent" class="view-panel active" aria-labelledby="headingCreate">
+      <div class="hero-card">
+        <div class="hero-content">
+          <span class="badge badge-accent">Intelligent Event Architect</span>
+          <h1 id="headingCreate">Design Your Perfect Celebration</h1>
+          <p class="hero-desc">Create personalized budgets, schedules, vendor contracts, and creative themes for Weddings, Birthdays, and Community Gatherings.</p>
+          
+          <div id="aiStatusNotice" class="ai-status-pill">
+            <span class="status-dot"></span>
+            <span id="aiStatusText">Checking planner engine status...</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-container">
+        <form id="formEventCreate" novalidate>
+          <!-- Category Selector -->
+          <div class="form-section">
+            <label class="section-label">1. Choose Event Category <span class="required">*</span></label>
+            <div class="category-grid" role="radiogroup" aria-label="Event Category">
+              <label class="category-card" for="catWedding">
+                <input type="radio" id="catWedding" name="category" value="wedding" checked>
+                <div class="category-card-content">
+                  <div class="card-icon" aria-hidden="true">💍</div>
+                  <div class="card-title">Wedding</div>
+                  <div class="card-desc">Ceremonies, banquet catering, mandap florals, photography & styling</div>
+                </div>
+              </label>
+
+              <label class="category-card" for="catBirthday">
+                <input type="radio" id="catBirthday" name="category" value="birthday">
+                <div class="category-card-content">
+                  <div class="card-icon" aria-hidden="true">🎂</div>
+                  <div class="card-title">Birthday Party</div>
+                  <div class="card-desc">Custom themes, celebration cake, party games, decor & hampers</div>
+                </div>
+              </label>
+
+              <label class="category-card" for="catCommunity">
+                <input type="radio" id="catCommunity" name="category" value="community">
+                <div class="category-card-content">
+                  <div class="card-icon" aria-hidden="true">🤝</div>
+                  <div class="card-title">Community Event</div>
+                  <div class="card-desc">Stage & AV sound, civic permits, eco waste, first aid & volunteers</div>
+                </div>
+              </label>
+            </div>
+            <div class="field-error" id="err_category" role="alert"></div>
+          </div>
+
+          <!-- Essential Specifications -->
+          <div class="form-section">
+            <label class="section-label">2. Essential Event Details</label>
+            <div class="grid-row grid-2">
+              <div class="form-group">
+                <label for="eventName">Event Name <span class="required">*</span></label>
+                <input type="text" id="eventName" name="name" class="input-field" placeholder="e.g. Aarav & Priya's Wedding" maxlength="100" required>
+                <div class="field-error" id="err_name" role="alert"></div>
+              </div>
+
+              <div class="form-group">
+                <label for="eventDate">Event Date <span class="required">*</span></label>
+                <input type="date" id="eventDate" name="event_date" class="input-field" required>
+                <div class="field-error" id="err_event_date" role="alert"></div>
+              </div>
+            </div>
+
+            <div class="grid-row grid-3">
+              <div class="form-group">
+                <label for="eventLocation">Location / City <span class="required">*</span></label>
+                <input type="text" id="eventLocation" name="location" class="input-field" placeholder="e.g. Jaipur, Rajasthan" maxlength="120" required>
+                <div class="field-error" id="err_location" role="alert"></div>
+              </div>
+
+              <div class="form-group">
+                <label for="eventGuests">Expected Guests <span class="required">*</span></label>
+                <input type="number" id="eventGuests" name="guests" class="input-field" min="1" max="100000" placeholder="e.g. 250" required>
+                <div class="field-error" id="err_guests" role="alert"></div>
+              </div>
+
+              <div class="form-group">
+                <label for="eventBudget">Total Budget <span class="required">*</span></label>
+                <div class="input-with-currency">
+                  <select id="eventCurrency" name="currency" class="select-currency" aria-label="Select Currency">
+                    <option value="INR" selected>INR (₹)</option>
+                    <option value="USD">USD ($)</option>
+                    <option value="EUR">EUR (€)</option>
+                    <option value="GBP">GBP (£)</option>
+                    <option value="CAD">CAD (CA$)</option>
+                    <option value="AUD">AUD (AU$)</option>
+                    <option value="AED">AED</option>
+                    <option value="SGD">SGD (S$)</option>
+                  </select>
+                  <input type="number" id="eventBudget" name="budget" class="input-field" min="100" max="500000000" placeholder="e.g. 1500000" required>
+                </div>
+                <div class="field-error" id="err_budget" role="alert"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Personalization Fields -->
+          <div class="form-section">
+            <label class="section-label">3. Personalization & Preferences <span class="optional">(Optional)</span></label>
+            <div class="grid-row grid-2">
+              <div class="form-group">
+                <label for="eventTheme">Preferred Theme / Aesthetic</label>
+                <input type="text" id="eventTheme" name="theme" class="input-field" placeholder="e.g. Royal Rajasthani, Retro Disco, Rustic Boho, Modern Minimalist" maxlength="150">
+              </div>
+
+              <div class="form-group">
+                <label for="eventVenueType">Setting / Venue Type</label>
+                <select id="eventVenueType" name="venue_type" class="input-field">
+                  <option value="indoor">Indoor (Banquet / Hall / Auditorium)</option>
+                  <option value="outdoor">Outdoor (Lawn / Beach / Open Ground)</option>
+                  <option value="hybrid">Hybrid (Indoor Hall with Outdoor Lawn)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="grid-row grid-2">
+              <div class="form-group">
+                <label for="eventPriorities">Main Priorities</label>
+                <input type="text" id="eventPriorities" name="priorities" class="input-field" placeholder="e.g. Grand royal catering, candid photography, energetic DJ party" maxlength="500">
+              </div>
+
+              <div class="form-group">
+                <label for="eventDietary">Food & Dietary Preferences</label>
+                <input type="text" id="eventDietary" name="dietary" class="input-field" placeholder="e.g. Pure Vegetarian, Jain options, Gluten-free live counter" maxlength="500">
+              </div>
+            </div>
+
+            <div class="grid-row grid-2">
+              <div class="form-group">
+                <label for="eventAccessibility">Accessibility & Inclusivity Needs</label>
+                <input type="text" id="eventAccessibility" name="accessibility" class="input-field" placeholder="e.g. Wheelchair ramp, elderly seating, quiet zone" maxlength="500">
+              </div>
+
+              <div class="form-group">
+                <label for="eventNotes">Additional Notes / Instructions</label>
+                <input type="text" id="eventNotes" name="notes" class="input-field" placeholder="e.g. Strict 10 PM sound curfew, eco-friendly zero-plastic setup" maxlength="500">
+              </div>
+            </div>
+          </div>
+
+          <!-- Submit Action -->
+          <div class="form-actions">
+            <button type="submit" id="btnGeneratePlan" class="btn btn-primary btn-lg">
+              <span class="btn-text">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+                Generate Intelligent Event Plan
+              </span>
+              <span class="btn-spinner hidden" aria-hidden="true"></span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- SECTION 2: EVENT DASHBOARD VIEW (Displaying the Plan) -->
+    <section id="viewDashboard" class="view-panel" aria-labelledby="dashboardEventTitle" style="display: none;">
+      <!-- Dashboard Header -->
+      <div class="dashboard-header-card">
+        <div class="dh-top">
+          <div class="dh-title-area">
+            <div class="dh-badge-row">
+              <span id="dashCategoryBadge" class="badge badge-cat">Wedding</span>
+              <span id="dashAiSourceBadge" class="badge badge-ai">Intelligent Fallback</span>
+            </div>
+            <h1 id="dashboardEventTitle" class="dashboard-title">Aarav & Priya's Wedding</h1>
+            <div class="dashboard-meta-row">
+              <span class="meta-item">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                <span id="dashDate">2026-11-20</span>
+              </span>
+              <span class="meta-item">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                <span id="dashLocation">Jaipur</span>
+              </span>
+              <span class="meta-item">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                <span id="dashGuests">250 Guests</span>
+              </span>
+              <span class="meta-item">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                <span id="dashBudgetTotal">₹ 1,500,000</span>
+              </span>
+            </div>
+          </div>
+
+          <div class="dh-actions">
+            <button id="btnPrintPlan" class="btn btn-secondary btn-sm" aria-label="Print or export event plan">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+              Print / Save PDF
+            </button>
+            <button id="btnDeleteEvent" class="btn btn-danger btn-sm" aria-label="Delete event plan">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+              Delete Event
+            </button>
+          </div>
+        </div>
+
+        <!-- Executive Summary Banner -->
+        <div class="dh-summary-box">
+          <div class="summary-icon" aria-hidden="true">💡</div>
+          <div class="summary-text-block">
+            <span class="summary-label">Executive Blueprint</span>
+            <p id="dashPlanSummary" class="summary-body">Loading planning blueprint...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dashboard Tab Navigation -->
+      <nav class="dashboard-tabs" role="tablist" aria-label="Plan Sections">
+        <button role="tab" id="tabBudget" class="tab-btn active" aria-selected="true" aria-controls="panelBudget">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+          Budget Planner
+        </button>
+        <button role="tab" id="tabTimeline" class="tab-btn" aria-selected="false" aria-controls="panelTimeline">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+          Timeline & Tasks (<span id="tabTaskCount">0</span>)
+        </button>
+        <button role="tab" id="tabVendors" class="tab-btn" aria-selected="false" aria-controls="panelVendors">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><polyline points="16 11 18 13 22 9"></polyline></svg>
+          Vendor Checklist (<span id="tabVendorCount">0</span>)
+        </button>
+        <button role="tab" id="tabIdeas" class="tab-btn" aria-selected="false" aria-controls="panelIdeas">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+          Personalized Ideas (<span id="tabIdeasCount">0</span>)
+        </button>
+      </nav>
+
+      <!-- TAB 1: BUDGET PLANNER -->
+      <div id="panelBudget" class="tab-panel active" role="tabpanel" aria-labelledby="tabBudget">
+        <!-- Budget Financial Overview Cards -->
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <span class="metric-label">Total Budget</span>
+            <span class="metric-val" id="metricTotalBudget">₹0</span>
+            <span class="metric-sub">Ceiling limit</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-label">Planned Allocations</span>
+            <span class="metric-val" id="metricTotalAllocated">₹0</span>
+            <span class="metric-sub" id="metricAllocPct">100% planned</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-label">Actual Spent</span>
+            <span class="metric-val" id="metricTotalActual">₹0</span>
+            <span class="metric-sub" id="metricSpentPct">0% utilized</span>
+          </div>
+          <div class="metric-card" id="metricCardRemaining">
+            <span class="metric-label">Remaining Balance</span>
+            <span class="metric-val" id="metricRemaining">₹0</span>
+            <span class="metric-sub" id="metricReserveNotice">Unallocated: ₹0</span>
+          </div>
+        </div>
+
+        <!-- Budget Visual Progress Bar -->
+        <div class="budget-progress-container">
+          <div class="progress-header">
+            <span>Budget Utilization</span>
+            <span id="progressPctText">0% spent</span>
+          </div>
+          <div class="progress-bar-track" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="budgetProgressBar">
+            <div class="progress-bar-fill" id="budgetProgressFill" style="width: 0%;"></div>
+          </div>
+        </div>
+
+        <!-- Budget Warnings Area -->
+        <div id="budgetWarningsContainer" class="warnings-block" style="display: none;" role="alert"></div>
+
+        <!-- Budget Items Table Card -->
+        <div class="card table-card">
+          <div class="card-header">
+            <div class="ch-left">
+              <h2 class="card-title">Expense Allocation & Tracking</h2>
+              <p class="card-desc">Estimates are planning benchmarks. Update actual expenditure as vendor contracts are confirmed.</p>
+            </div>
+            <button id="btnAddBudgetRow" class="btn btn-secondary btn-sm" aria-label="Add a custom budget category">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+              Add Category
+            </button>
+          </div>
+
+          <div class="table-responsive">
+            <table class="data-table" id="tableBudget">
+              <thead>
+                <tr>
+                  <th scope="col" style="width: 25%;">Category</th>
+                  <th scope="col" style="width: 15%;">Priority</th>
+                  <th scope="col" style="width: 18%;">Estimated (<span class="currencySymbol">₹</span>)</th>
+                  <th scope="col" style="width: 18%;">Actual Spent (<span class="currencySymbol">₹</span>)</th>
+                  <th scope="col" style="width: 16%;">Status / Notes</th>
+                  <th scope="col" style="width: 8%; text-align: center;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="budgetTableBody">
+                <!-- Populated dynamically via app.js -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: TIMELINE & TASKS -->
+      <div id="panelTimeline" class="tab-panel" role="tabpanel" aria-labelledby="tabTimeline" style="display: none;">
+        <div class="card">
+          <div class="card-header">
+            <div class="ch-left">
+              <h2 class="card-title">Chronological Milestones & Tasks</h2>
+              <p class="card-desc">Dates are dynamically calculated relative to your event date. Tasks flag overdue status automatically.</p>
+            </div>
+            <div class="ch-actions">
+              <button id="btnFilterPendingTasks" class="btn btn-ghost btn-sm active" data-filter="all">All</button>
+              <button id="btnFilterIncomplete" class="btn btn-ghost btn-sm" data-filter="pending">Pending</button>
+              <button id="btnFilterCompleted" class="btn btn-ghost btn-sm" data-filter="completed">Completed</button>
+              <button id="btnAddTask" class="btn btn-secondary btn-sm">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                Add Task
+              </button>
+            </div>
+          </div>
+
+          <div class="timeline-list" id="timelineTasksList">
+            <!-- Populated dynamically via app.js -->
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 3: VENDOR CHECKLIST -->
+      <div id="panelVendors" class="tab-panel" role="tabpanel" aria-labelledby="tabVendors" style="display: none;">
+        <div class="card">
+          <div class="card-header">
+            <div class="ch-left">
+              <h2 class="card-title">Vendor & Logistics Directory</h2>
+              <p class="card-desc">Track discussions, quotations, and contracts. Disclaimer: Estimates are planning baselines, not live verified vendor quotes.</p>
+            </div>
+            <div class="ch-actions">
+              <button id="btnAddVendor" class="btn btn-secondary btn-sm">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                Add Vendor
+              </button>
+            </div>
+          </div>
+
+          <div class="vendor-grid" id="vendorGrid">
+            <!-- Populated dynamically via app.js -->
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 4: PERSONALIZED IDEAS -->
+      <div id="panelIdeas" class="tab-panel" role="tabpanel" aria-labelledby="tabIdeas" style="display: none;">
+        <div class="card">
+          <div class="card-header">
+            <div class="ch-left">
+              <h2 class="card-title">Curated Creative Concepts & Strategic Recommendations</h2>
+              <p class="card-desc">Intelligent recommendations tailored to your guest headcount, aesthetic preferences, and budget parameters.</p>
+            </div>
+          </div>
+
+          <div class="ideas-grid" id="ideasGrid">
+            <!-- Populated dynamically via app.js -->
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- SECTION 3: SAVED EVENTS DRAWER / MODAL -->
+    <div id="modalSavedEvents" class="modal-backdrop" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="modalSavedTitle">
+      <div class="modal-card modal-lg">
+        <div class="modal-header">
+          <h2 id="modalSavedTitle" class="modal-title">Saved Event Plans</h2>
+          <button class="btn-close" id="btnCloseSavedModal" aria-label="Close saved plans modal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div id="savedEventsListContainer" class="saved-events-grid">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: ADD BUDGET CATEGORY -->
+    <div id="modalAddBudget" class="modal-backdrop" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="modalAddBudgetTitle">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h2 id="modalAddBudgetTitle" class="modal-title">Add Budget Category</h2>
+          <button class="btn-close" id="btnCloseAddBudget" aria-label="Close modal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <form id="formAddBudget">
+            <div class="form-group">
+              <label for="newBudgetCat">Category Name <span class="required">*</span></label>
+              <input type="text" id="newBudgetCat" class="input-field" placeholder="e.g. Traditional Dhol Players, Return Favors" required maxlength="80">
+            </div>
+            <div class="grid-row grid-2">
+              <div class="form-group">
+                <label for="newBudgetEst">Estimated Amount (<span class="currencySymbol">₹</span>)</label>
+                <input type="number" id="newBudgetEst" class="input-field" min="0" placeholder="0">
+              </div>
+              <div class="form-group">
+                <label for="newBudgetPriority">Priority</label>
+                <select id="newBudgetPriority" class="input-field">
+                  <option value="essential">Essential</option>
+                  <option value="optional">Optional</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="newBudgetNotes">Notes / Description</label>
+              <input type="text" id="newBudgetNotes" class="input-field" placeholder="Vendor contact or items included" maxlength="300">
+            </div>
+            <div class="modal-actions">
+              <button type="button" class="btn btn-ghost" id="btnCancelAddBudget">Cancel</button>
+              <button type="submit" class="btn btn-primary">Save Category</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: ADD TASK -->
+    <div id="modalAddTask" class="modal-backdrop" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="modalAddTaskTitle">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h2 id="modalAddTaskTitle" class="modal-title">Add Timeline Task</h2>
+          <button class="btn-close" id="btnCloseAddTask" aria-label="Close modal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <form id="formAddTask">
+            <div class="form-group">
+              <label for="newTaskTitle">Task Title <span class="required">*</span></label>
+              <input type="text" id="newTaskTitle" class="input-field" placeholder="e.g. Finalize bridal makeup artist" required maxlength="100">
+            </div>
+            <div class="form-group">
+              <label for="newTaskDesc">Description</label>
+              <input type="text" id="newTaskDesc" class="input-field" placeholder="Key deliverables or vendor items to verify" maxlength="300">
+            </div>
+            <div class="grid-row grid-2">
+              <div class="form-group">
+                <label for="newTaskDueDate">Due Date <span class="required">*</span></label>
+                <input type="date" id="newTaskDueDate" class="input-field" required>
+              </div>
+              <div class="form-group">
+                <label for="newTaskPriority">Priority</label>
+                <select id="newTaskPriority" class="input-field">
+                  <option value="high">High</option>
+                  <option value="medium" selected>Medium</option>
+                  <option value="low">Low</option>
+                </select>
+              </div>
+            </div>
+            <div class="modal-actions">
+              <button type="button" class="btn btn-ghost" id="btnCancelAddTask">Cancel</button>
+              <button type="submit" class="btn btn-primary">Save Task</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: ADD VENDOR -->
+    <div id="modalAddVendor" class="modal-backdrop" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="modalAddVendorTitle">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h2 id="modalAddVendorTitle" class="modal-title">Add Vendor Entry</h2>
+          <button class="btn-close" id="btnCloseAddVendor" aria-label="Close modal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <form id="formAddVendor">
+            <div class="form-group">
+              <label for="newVendorTitle">Vendor Role / Name <span class="required">*</span></label>
+              <input type="text" id="newVendorTitle" class="input-field" placeholder="e.g. Master Cake Artist, DJ Sound Console" required maxlength="100">
+            </div>
+            <div class="grid-row grid-2">
+              <div class="form-group">
+                <label for="newVendorCat">Category</label>
+                <input type="text" id="newVendorCat" class="input-field" placeholder="e.g. Catering, Media, Sound" maxlength="80">
+              </div>
+              <div class="form-group">
+                <label for="newVendorStatus">Current Status</label>
+                <select id="newVendorStatus" class="input-field">
+                  <option value="not_contacted">Not Contacted</option>
+                  <option value="in_discussion">In Discussion</option>
+                  <option value="quote_received">Quote Received</option>
+                  <option value="hired">Hired</option>
+                  <option value="completed">Completed</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="newVendorDesc">Description & Scope</label>
+              <input type="text" id="newVendorDesc" class="input-field" placeholder="Services to deliver, deliverables timeline" maxlength="400">
+            </div>
+            <div class="form-group">
+              <label for="newVendorNotes">Notes / Quotes / Terms</label>
+              <input type="text" id="newVendorNotes" class="input-field" placeholder="Comparison notes, quote amounts, cancellation policies" maxlength="400">
+            </div>
+            <div class="modal-actions">
+              <button type="button" class="btn btn-ghost" id="btnCancelAddVendor">Cancel</button>
+              <button type="submit" class="btn btn-primary">Save Vendor</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONFIRMATION DIALOG (Accessible replacement for browser confirm()) -->
+    <div id="modalConfirm" class="modal-backdrop" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="confirmDialogTitle">
+      <div class="modal-card modal-sm">
+        <div class="modal-header">
+          <h2 id="confirmDialogTitle" class="modal-title">Confirm Action</h2>
+          <button class="btn-close" id="btnCloseConfirm" aria-label="Cancel confirmation">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p id="confirmMessageText">Are you sure you want to proceed?</p>
+          <div class="modal-actions">
+            <button type="button" class="btn btn-ghost" id="btnConfirmCancel">Cancel</button>
+            <button type="button" class="btn btn-danger" id="btnConfirmOk">Proceed</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" class="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- App Script -->
+  <script src="/static/js/app.js"></script>
+</body>
+</html>

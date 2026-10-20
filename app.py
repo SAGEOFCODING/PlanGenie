@@ -4,6 +4,10 @@ Provides RESTful APIs for event creation, AI plan generation, budget management,
 timeline task updates, vendor checklist tracking, and persistence.
 """
 import logging
+import time
+from collections import defaultdict
+from threading import Lock
+from datetime import datetime
 from flask import Flask, render_template, request, jsonify, Response, send_from_directory
 
 from config import Config
@@ -27,6 +31,49 @@ app.config.from_object(Config)
 # Initialize database
 db = Database(app.config["DATABASE_PATH"])
 
+# --- In-Memory Rate Limiter for DoS Mitigation ---
+class InMemoryRateLimiter:
+    """Thread-safe sliding-window rate limiter preventing API abuse and resource starvation."""
+    def __init__(self):
+        self._requests = defaultdict(list)
+        self._lock = Lock()
+
+    def is_allowed(self, key: str, max_requests: int, window_seconds: int = 60) -> bool:
+        now = time.time()
+        cutoff = now - window_seconds
+        with self._lock:
+            timestamps = [t for t in self._requests[key] if t > cutoff]
+            if len(timestamps) >= max_requests:
+                self._requests[key] = timestamps
+                return False
+            timestamps.append(now)
+            self._requests[key] = timestamps
+            return True
+
+rate_limiter = InMemoryRateLimiter()
+
+# --- Security Rate Limiting Middleware ---
+@app.before_request
+def check_rate_limits():
+    """Applies IP-based rate limiting to prevent DoS attacks on expensive generation endpoints."""
+    if app.testing:
+        return None
+    if request.path.startswith("/api/"):
+        ip = request.headers.get("X-Forwarded-For", request.remote_addr or "127.0.0.1").split(",")[0].strip()
+        # Heavier generation endpoint: 20 plans per minute
+        if request.path == "/api/events" and request.method == "POST":
+            if not rate_limiter.is_allowed(f"plan:{ip}", max_requests=20, window_seconds=60):
+                return jsonify({
+                    "success": False,
+                    "error": "Rate limit exceeded for event plan generation. Please wait a moment."
+                }), 429
+        # General API endpoints: 120 requests per minute
+        elif not rate_limiter.is_allowed(f"api:{ip}", max_requests=120, window_seconds=60):
+            return jsonify({
+                "success": False,
+                "error": "Too many requests. Please slow down."
+            }), 429
+
 # --- Security & Caching Headers Middleware ---
 @app.after_request
 def set_security_headers(response):
@@ -34,6 +81,19 @@ def set_security_headers(response):
     response.headers["X-Frame-Options"] = "DENY"
     response.headers["X-XSS-Protection"] = "1; mode=block"
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["Cross-Origin-Opener-Policy"] = "same-origin"
+    response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=(), payment=()"
+    response.headers["Content-Security-Policy"] = (
+        "default-src 'self'; "
+        "script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; "
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+        "font-src 'self' https://fonts.gstatic.com; "
+        "img-src 'self' data:; "
+        "connect-src 'self'; "
+        "frame-ancestors 'none'; "
+        "base-uri 'self'; "
+        "form-action 'self';"
+    )
     
     # Efficient client-side caching for immutable static assets & telemetry
     if request.path.startswith("/static/") or request.path in ("/favicon.ico", "/sitemap.xml", "/robots.txt", "/llms.txt"):
@@ -53,9 +113,19 @@ def handle_not_found(e):
         return jsonify({"success": False, "error": "The requested resource was not found."}), 404
     return render_template("404.html"), 404
 
+@app.errorhandler(405)
+def handle_method_not_allowed(e):
+    if request.path.startswith("/api/"):
+        return jsonify({"success": False, "error": "HTTP method not allowed on this endpoint."}), 405
+    return render_template("404.html"), 405
+
 @app.errorhandler(413)
 def handle_payload_too_large(e):
     return jsonify({"success": False, "error": "Uploaded payload is too large. Maximum allowed size is 1MB."}), 413
+
+@app.errorhandler(429)
+def handle_rate_limited(e):
+    return jsonify({"success": False, "error": "Rate limit exceeded. Please wait a moment."}), 429
 
 @app.errorhandler(500)
 def handle_internal_error(e):
@@ -281,7 +351,7 @@ def delete_event(event_id):
 # --- Budget Routes ---
 @app.route("/api/events/<int:event_id>/budget/<int:item_id>", methods=["PATCH"])
 def update_budget_item(event_id, item_id):
-    """Updates estimated amount, actual expense, or notes for a budget category."""
+    """Updates estimated amount, actual expense, or notes for a budget category with IDOR verification."""
     if not request.is_json:
         return jsonify({"success": False, "error": "JSON payload required."}), 400
 
@@ -292,17 +362,19 @@ def update_budget_item(event_id, item_id):
 
     # Validate numbers
     try:
-        est_val = max(0, int(est)) if est is not None else None
+        est_val = max(0, min(Config.MAX_BUDGET, int(est))) if est is not None else None
     except (ValueError, TypeError):
         return jsonify({"success": False, "error": "Estimated amount must be a positive number."}), 400
 
     try:
-        act_val = max(0, int(act)) if act is not None else None
+        act_val = max(0, min(Config.MAX_BUDGET, int(act))) if act is not None else None
     except (ValueError, TypeError):
         return jsonify({"success": False, "error": "Actual amount must be a positive number."}), 400
 
+    notes_val = str(notes).strip()[:500] if notes is not None else None
+
     try:
-        updated = db.update_budget_item(item_id, est_val, act_val, notes)
+        updated = db.update_budget_item(item_id, est_val, act_val, notes_val, event_id=event_id)
         if not updated:
             return jsonify({"success": False, "error": "Budget item not found."}), 404
 
@@ -321,7 +393,7 @@ def update_budget_item(event_id, item_id):
 
 @app.route("/api/events/<int:event_id>/budget", methods=["POST"])
 def add_budget_item(event_id):
-    """Adds a custom budget item to an event."""
+    """Adds a custom budget item to an event with validation."""
     if not request.is_json:
         return jsonify({"success": False, "error": "JSON payload required."}), 400
 
@@ -331,13 +403,15 @@ def add_budget_item(event_id):
         return jsonify({"success": False, "error": "Category name is required."}), 400
 
     try:
-        est = max(0, int(data.get("estimated_amount", 0)))
-        act = max(0, int(data.get("actual_amount", 0)))
+        est = max(0, min(Config.MAX_BUDGET, int(data.get("estimated_amount", 0))))
+        act = max(0, min(Config.MAX_BUDGET, int(data.get("actual_amount", 0))))
     except (ValueError, TypeError):
         return jsonify({"success": False, "error": "Amounts must be valid positive numbers."}), 400
 
-    priority = str(data.get("priority", "essential")).lower()
-    notes = str(data.get("notes", "")).strip()[:300]
+    priority = str(data.get("priority", "essential")).lower().strip()
+    if priority not in ("essential", "important", "discretionary"):
+        priority = "essential"
+    notes = str(data.get("notes", "")).strip()[:500]
 
     try:
         new_id = db.add_budget_item(event_id, category, est, act, priority, notes)
@@ -357,9 +431,9 @@ def add_budget_item(event_id):
 
 @app.route("/api/events/<int:event_id>/budget/<int:item_id>", methods=["DELETE"])
 def delete_budget_item(event_id, item_id):
-    """Deletes a budget item."""
+    """Deletes a budget item with IDOR verification."""
     try:
-        deleted = db.delete_budget_item(item_id)
+        deleted = db.delete_budget_item(item_id, event_id=event_id)
         if not deleted:
             return jsonify({"success": False, "error": "Budget item not found."}), 404
 
@@ -379,7 +453,7 @@ def delete_budget_item(event_id, item_id):
 # --- Task Routes ---
 @app.route("/api/events/<int:event_id>/tasks/<int:task_id>", methods=["PATCH"])
 def update_task_status(event_id, task_id):
-    """Toggles or updates task completion status."""
+    """Toggles or updates task completion status with IDOR verification."""
     if not request.is_json:
         return jsonify({"success": False, "error": "JSON payload required."}), 400
 
@@ -387,7 +461,7 @@ def update_task_status(event_id, task_id):
     is_completed = bool(data.get("is_completed", False))
 
     try:
-        updated = db.update_task_status(task_id, is_completed)
+        updated = db.update_task_status(task_id, is_completed, event_id=event_id)
         if not updated:
             return jsonify({"success": False, "error": "Task not found."}), 404
 
@@ -400,7 +474,7 @@ def update_task_status(event_id, task_id):
 
 @app.route("/api/events/<int:event_id>/tasks", methods=["POST"])
 def add_task(event_id):
-    """Adds a custom task to an event."""
+    """Adds a custom task to an event with validation."""
     if not request.is_json:
         return jsonify({"success": False, "error": "JSON payload required."}), 400
 
@@ -412,9 +486,15 @@ def add_task(event_id):
     due_date = str(data.get("due_date", "")).strip()
     if not due_date:
         return jsonify({"success": False, "error": "Due date is required."}), 400
+    try:
+        datetime.strptime(due_date, "%Y-%m-%d")
+    except ValueError:
+        return jsonify({"success": False, "error": "Invalid date format. Expected YYYY-MM-DD."}), 400
 
-    desc = str(data.get("description", "")).strip()[:300]
-    priority = str(data.get("priority", "medium")).lower()
+    desc = str(data.get("description", "")).strip()[:500]
+    priority = str(data.get("priority", "medium")).lower().strip()
+    if priority not in ("high", "medium", "low"):
+        priority = "medium"
     category = str(data.get("category", "General")).strip()[:50]
 
     try:
@@ -428,9 +508,9 @@ def add_task(event_id):
 
 @app.route("/api/events/<int:event_id>/tasks/<int:task_id>", methods=["DELETE"])
 def delete_task(event_id, task_id):
-    """Deletes a task."""
+    """Deletes a task with IDOR verification."""
     try:
-        deleted = db.delete_task(task_id)
+        deleted = db.delete_task(task_id, event_id=event_id)
         if not deleted:
             return jsonify({"success": False, "error": "Task not found."}), 404
         tasks = db.get_tasks(event_id)
@@ -440,20 +520,39 @@ def delete_task(event_id, task_id):
         logger.error(f"Error deleting task: {e}")
         return jsonify({"success": False, "error": "Failed to delete task."}), 500
 
+ALLOWED_VENDOR_STATUSES = {
+    "not_contacted", "in_discussion", "quote_received",
+    "hired", "completed", "contacted", "quoted", "booked", "declined"
+}
+
 # --- Vendor Routes ---
 @app.route("/api/events/<int:event_id>/vendors/<int:vendor_id>", methods=["PATCH"])
 def update_vendor(event_id, vendor_id):
-    """Updates vendor status, notes, or estimated quote."""
+    """Updates vendor status, notes, or estimated quote with IDOR verification."""
     if not request.is_json:
         return jsonify({"success": False, "error": "JSON payload required."}), 400
 
     data = request.get_json()
     status = data.get("status")
+    status_val = None
+    if status is not None:
+        status_str = str(status).strip().lower()
+        if status_str in ALLOWED_VENDOR_STATUSES:
+            status_val = status_str
+
     notes = data.get("notes")
+    notes_val = str(notes).strip()[:500] if notes is not None else None
+
     estimated_cost = data.get("estimated_cost")
+    cost_val = None
+    if estimated_cost is not None:
+        try:
+            cost_val = max(0, min(Config.MAX_BUDGET, int(estimated_cost)))
+        except (ValueError, TypeError):
+            return jsonify({"success": False, "error": "Estimated cost must be a valid number."}), 400
 
     try:
-        updated = db.update_vendor_item(vendor_id, status, notes, estimated_cost)
+        updated = db.update_vendor_item(vendor_id, status_val, notes_val, cost_val, event_id=event_id)
         if not updated:
             return jsonify({"success": False, "error": "Vendor item not found."}), 404
 
@@ -465,7 +564,7 @@ def update_vendor(event_id, vendor_id):
 
 @app.route("/api/events/<int:event_id>/vendors", methods=["POST"])
 def add_vendor(event_id):
-    """Adds a custom vendor checklist item."""
+    """Adds a custom vendor checklist item with validation."""
     if not request.is_json:
         return jsonify({"success": False, "error": "JSON payload required."}), 400
 
@@ -475,11 +574,13 @@ def add_vendor(event_id):
     if not title:
         return jsonify({"success": False, "error": "Vendor title/role is required."}), 400
 
-    desc = str(data.get("description", "")).strip()[:400]
+    desc = str(data.get("description", "")).strip()[:500]
     status = str(data.get("status", "not_contacted")).strip().lower()
-    notes = str(data.get("notes", "")).strip()[:400]
+    if status not in ALLOWED_VENDOR_STATUSES:
+        status = "not_contacted"
+    notes = str(data.get("notes", "")).strip()[:500]
     try:
-        cost = max(0, int(data.get("estimated_cost", 0)))
+        cost = max(0, min(Config.MAX_BUDGET, int(data.get("estimated_cost", 0))))
     except (ValueError, TypeError):
         cost = 0
 
@@ -493,9 +594,9 @@ def add_vendor(event_id):
 
 @app.route("/api/events/<int:event_id>/vendors/<int:vendor_id>", methods=["DELETE"])
 def delete_vendor(event_id, vendor_id):
-    """Deletes a vendor item."""
+    """Deletes a vendor item with IDOR verification."""
     try:
-        deleted = db.delete_vendor_item(vendor_id)
+        deleted = db.delete_vendor_item(vendor_id, event_id=event_id)
         if not deleted:
             return jsonify({"success": False, "error": "Vendor item not found."}), 404
         vendors = db.get_vendor_items(event_id)

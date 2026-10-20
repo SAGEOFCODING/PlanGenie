@@ -3,9 +3,11 @@ Application configuration for the GenAI-Powered Event Planning Assistant.
 Loads environment variables safely without exposing sensitive data.
 """
 import os
+import secrets
 
 class Config:
-    SECRET_KEY = os.environ.get("FLASK_SECRET_KEY", "dev-secret-key-change-in-production")
+    # Use environment secret if provided, or generate a cryptographically strong random token
+    SECRET_KEY = os.environ.get("FLASK_SECRET_KEY") or secrets.token_hex(32)
     DATABASE_PATH = os.environ.get("DATABASE_PATH", "events.db")
     
     # AI Provider configuration

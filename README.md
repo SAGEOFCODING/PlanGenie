@@ -263,11 +263,21 @@ challange-5/
 
 ## 10. Security & Privacy Safeguards
 
-- **Zero Credential Leaks:** API keys reside solely in server environment variables and are never rendered in HTML, JavaScript, logs, or API responses.
-- **Parameterized SQL:** All SQLite database interactions use parameter substitution (`?`), eliminating SQL injection risks.
-- **DOM-Based XSS Prevention:** User input and AI-generated text are rendered exclusively using native DOM properties (`textContent`, `replaceChildren`, `appendChild`) rather than raw `innerHTML`.
-- **Security Headers Attached:** Server attaches `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `X-XSS-Protection: 1; mode=block`, and `Referrer-Policy: strict-origin-when-cross-origin`.
-- **Input & Payload Limits:** Bounded string lengths for all form fields; max payload size capped at 1 MB.
+- **Zero Credential Leaks:** API keys reside solely in server environment variables and are never rendered in HTML, JavaScript, logs, or API responses. Cryptographically strong default secret key generated via `secrets.token_hex(32)`.
+- **Parameterized SQL & Zero Injection:** All SQLite database interactions use parameter substitution (`?`), eliminating SQL injection risks.
+- **IDOR (Insecure Direct Object Reference) Protection:** Subresource mutations (tasks, budget items, vendors) strictly verify that the target item belongs to the requested `event_id` in SQL (`WHERE id = ? AND event_id = ?`), preventing unauthorized cross-event access or deletion.
+- **In-Memory Rate Limiting & DoS Mitigation:** Sliding-window rate limiter throttles expensive AI plan generation (20 req/min) and general API routes (120 req/min), defending against resource exhaustion without external infrastructure dependencies.
+- **DOM-Based XSS Prevention:** User input and AI-generated text are rendered exclusively using native DOM properties (`textContent`, `replaceChildren`, `appendChild`) rather than raw `innerHTML`. Server-side templates use automatic Jinja2 escaping.
+- **Comprehensive Defense-in-Depth HTTP Headers:**
+  - `Content-Security-Policy`: Restricts scripts, styles, fonts, connections, and blocks clickjacking (`frame-ancestors 'none'`).
+  - `X-Content-Type-Options: nosniff`: Prevents MIME-type sniffing.
+  - `X-Frame-Options: DENY`: Prevents UI redressing / clickjacking.
+  - `X-XSS-Protection: 1; mode=block`: Legacy browser protection.
+  - `Referrer-Policy: strict-origin-when-cross-origin`: Minimizes referrer leakage.
+  - `Permissions-Policy`: Disables unused browser capabilities (`camera`, `microphone`, `geolocation`, `payment`).
+  - `Cross-Origin-Opener-Policy: same-origin`: Isolates the browsing context.
+- **Input & Payload Limits:** Bounded string lengths for all form fields; max payload size capped at 1 MB with clean 413 responses.
+- **Non-Leaking Error Handlers:** 400, 404, 405, 413, 429, and 500 error responses return structured, clean JSON without exposing internal stack traces.
 
 ---
 
@@ -281,7 +291,7 @@ python -m unittest discover tests
 
 **Results:**
 ```
-Ran 41 tests in 0.840s
+Ran 52 tests in 1.811s
 
 OK
 ```
@@ -290,9 +300,10 @@ OK
 1. `tests/test_validation.py` (9 tests): Validates wedding, birthday, and community event inputs; rejects missing fields, past dates, non-positive budgets, zero guest counts, and oversize inputs.
 2. `tests/test_budget.py` (6 tests): Validates integer arithmetic, guarantees allocation sums equal total budgets across categories, checks remaining balances, and verifies over-budget warnings.
 3. `tests/test_timeline.py` (6 tests): Tests relative deadline calculations, short-notice event interval scaling, overdue task identification, Day-of Run of Show generation, and predictive bottleneck synthesis.
-4. `tests/test_database.py` (5 tests): Tests SQLite CRUD operations, cascade deletion of related child records, task completion toggling, and budget expense updates.
+4. `tests/test_database.py` (6 tests): Tests SQLite CRUD operations, cascade deletion of related child records, task completion toggling, budget expense updates, and single-query summary aggregations.
 5. `tests/test_ai_service.py` (6 tests): Tests JSON code-fence cleaning, structured schema validation, proportional budget rescaling when model outputs exceed ceilings, and fallback execution.
 6. `tests/test_routes.py` (9 tests): Tests HTTP status codes, JSON payload responses, REST endpoints for events, budget tracking, task toggling, vendor updates, and run of show payloads.
+7. `tests/test_security.py` (10 tests): Verifies HTTP security headers (CSP, COOP, Permissions-Policy, HSTS-ready), non-leaking error responses, IDOR protection across tasks/budget/vendors, invalid date rejections, non-JSON handling, and sliding-window rate limiting.
 
 ---
 

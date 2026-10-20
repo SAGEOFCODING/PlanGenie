@@ -263,20 +263,29 @@ class Database:
             rows = conn.execute(query, (event_id,)).fetchall()
             return [dict(r) for r in rows]
 
-    def update_budget_item(self, item_id, estimated_amount=None, actual_amount=None, notes=None):
-        """Updates amounts and notes for a specific budget item."""
+    def update_budget_item(self, item_id, estimated_amount=None, actual_amount=None, notes=None, event_id=None):
+        """Updates amounts and notes for a specific budget item, scoped optionally by event_id for IDOR protection."""
         with self.get_connection() as conn:
-            row = conn.execute("SELECT * FROM budget_items WHERE id = ?", (item_id,)).fetchone()
+            if event_id is not None:
+                row = conn.execute("SELECT * FROM budget_items WHERE id = ? AND event_id = ?", (item_id, event_id)).fetchone()
+            else:
+                row = conn.execute("SELECT * FROM budget_items WHERE id = ?", (item_id,)).fetchone()
             if not row:
                 return False
             curr = dict(row)
             new_est = int(estimated_amount) if estimated_amount is not None else curr["estimated_amount"]
             new_act = int(actual_amount) if actual_amount is not None else curr["actual_amount"]
             new_notes = notes if notes is not None else curr["notes"]
-            conn.execute("""
-            UPDATE budget_items SET estimated_amount = ?, actual_amount = ?, notes = ?
-            WHERE id = ?
-            """, (new_est, new_act, new_notes, item_id))
+            if event_id is not None:
+                conn.execute("""
+                UPDATE budget_items SET estimated_amount = ?, actual_amount = ?, notes = ?
+                WHERE id = ? AND event_id = ?
+                """, (new_est, new_act, new_notes, item_id, event_id))
+            else:
+                conn.execute("""
+                UPDATE budget_items SET estimated_amount = ?, actual_amount = ?, notes = ?
+                WHERE id = ?
+                """, (new_est, new_act, new_notes, item_id))
             return True
 
     def add_budget_item(self, event_id, category, estimated_amount=0, actual_amount=0, priority="essential", notes=""):
@@ -288,10 +297,13 @@ class Database:
             """, (event_id, category.strip(), int(estimated_amount), int(actual_amount), priority, notes))
             return cursor.lastrowid
 
-    def delete_budget_item(self, item_id):
-        """Deletes a budget item."""
+    def delete_budget_item(self, item_id, event_id=None):
+        """Deletes a budget item, optionally scoped by event_id for IDOR protection."""
         with self.get_connection() as conn:
-            cursor = conn.execute("DELETE FROM budget_items WHERE id = ?", (item_id,))
+            if event_id is not None:
+                cursor = conn.execute("DELETE FROM budget_items WHERE id = ? AND event_id = ?", (item_id, event_id))
+            else:
+                cursor = conn.execute("DELETE FROM budget_items WHERE id = ?", (item_id,))
             return cursor.rowcount > 0
 
     # --- Tasks CRUD ---
@@ -324,12 +336,17 @@ class Database:
             rows = conn.execute(query, (event_id,)).fetchall()
             return [dict(r) for r in rows]
 
-    def update_task_status(self, task_id, is_completed):
-        """Toggles or sets the completion status of a task."""
+    def update_task_status(self, task_id, is_completed, event_id=None):
+        """Toggles or sets completion status of a task, optionally scoped by event_id for IDOR protection."""
         with self.get_connection() as conn:
-            cursor = conn.execute("""
-            UPDATE tasks SET is_completed = ? WHERE id = ?
-            """, (1 if is_completed else 0, task_id))
+            if event_id is not None:
+                cursor = conn.execute("""
+                UPDATE tasks SET is_completed = ? WHERE id = ? AND event_id = ?
+                """, (1 if is_completed else 0, task_id, event_id))
+            else:
+                cursor = conn.execute("""
+                UPDATE tasks SET is_completed = ? WHERE id = ?
+                """, (1 if is_completed else 0, task_id))
             return cursor.rowcount > 0
 
     def add_task(self, event_id, title, description, due_date, priority="medium", category=""):
@@ -341,10 +358,13 @@ class Database:
             """, (event_id, title.strip(), description.strip(), due_date.strip(), priority.lower(), category.strip()))
             return cursor.lastrowid
 
-    def delete_task(self, task_id):
-        """Deletes a task."""
+    def delete_task(self, task_id, event_id=None):
+        """Deletes a task, optionally scoped by event_id for IDOR protection."""
         with self.get_connection() as conn:
-            cursor = conn.execute("DELETE FROM tasks WHERE id = ?", (task_id,))
+            if event_id is not None:
+                cursor = conn.execute("DELETE FROM tasks WHERE id = ? AND event_id = ?", (task_id, event_id))
+            else:
+                cursor = conn.execute("DELETE FROM tasks WHERE id = ?", (task_id,))
             return cursor.rowcount > 0
 
     # --- Vendor Checklist CRUD ---
@@ -377,20 +397,29 @@ class Database:
             rows = conn.execute(query, (event_id,)).fetchall()
             return [dict(r) for r in rows]
 
-    def update_vendor_item(self, vendor_id, status=None, notes=None, estimated_cost=None):
-        """Updates vendor status, notes or estimated cost."""
+    def update_vendor_item(self, vendor_id, status=None, notes=None, estimated_cost=None, event_id=None):
+        """Updates vendor status, notes or estimated cost, optionally scoped by event_id for IDOR protection."""
         with self.get_connection() as conn:
-            row = conn.execute("SELECT * FROM vendor_items WHERE id = ?", (vendor_id,)).fetchone()
+            if event_id is not None:
+                row = conn.execute("SELECT * FROM vendor_items WHERE id = ? AND event_id = ?", (vendor_id, event_id)).fetchone()
+            else:
+                row = conn.execute("SELECT * FROM vendor_items WHERE id = ?", (vendor_id,)).fetchone()
             if not row:
                 return False
             curr = dict(row)
             new_status = status.strip().lower() if status is not None else curr["status"]
             new_notes = notes.strip() if notes is not None else curr["notes"]
             new_cost = int(estimated_cost) if estimated_cost is not None else curr["estimated_cost"]
-            conn.execute("""
-            UPDATE vendor_items SET status = ?, notes = ?, estimated_cost = ?
-            WHERE id = ?
-            """, (new_status, new_notes, new_cost, vendor_id))
+            if event_id is not None:
+                conn.execute("""
+                UPDATE vendor_items SET status = ?, notes = ?, estimated_cost = ?
+                WHERE id = ? AND event_id = ?
+                """, (new_status, new_notes, new_cost, vendor_id, event_id))
+            else:
+                conn.execute("""
+                UPDATE vendor_items SET status = ?, notes = ?, estimated_cost = ?
+                WHERE id = ?
+                """, (new_status, new_notes, new_cost, vendor_id))
             return True
 
     def add_vendor_item(self, event_id, category, title, description="", status="not_contacted", notes="", estimated_cost=0):
@@ -402,10 +431,13 @@ class Database:
             """, (event_id, category.strip(), title.strip(), description.strip(), status.strip().lower(), notes.strip(), int(estimated_cost)))
             return cursor.lastrowid
 
-    def delete_vendor_item(self, vendor_id):
-        """Deletes a vendor item."""
+    def delete_vendor_item(self, vendor_id, event_id=None):
+        """Deletes a vendor item, optionally scoped by event_id for IDOR protection."""
         with self.get_connection() as conn:
-            cursor = conn.execute("DELETE FROM vendor_items WHERE id = ?", (vendor_id,))
+            if event_id is not None:
+                cursor = conn.execute("DELETE FROM vendor_items WHERE id = ? AND event_id = ?", (vendor_id, event_id))
+            else:
+                cursor = conn.execute("DELETE FROM vendor_items WHERE id = ?", (vendor_id,))
             return cursor.rowcount > 0
 
     # --- Personalized Ideas CRUD ---

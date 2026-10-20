@@ -308,73 +308,66 @@ OK
 
 ---
 
-## 12. Production Deployment Guide
+## 12. 100% Free Production Deployment Guide ($0 / No Credit Card Required)
 
-PlanGenie is completely containerized and WSGI-ready with `gunicorn`, `Dockerfile`, `Procfile`, and `render.yaml`. Below are the recommended deployment targets:
+PlanGenie is completely containerized and WSGI-ready with `gunicorn`, `Dockerfile`, `Procfile`, and `render.yaml`. Below are the best **100% free** hosting platforms with zero cost and no credit card required:
 
-### 🌟 Platform Recommendations Summary
+### 🌟 Free Hosting Platforms Comparison ($0 / Zero Payment)
 
-| Platform | Best For | Free Tier? | SQLite Persistence | Deploy Time |
-| :--- | :--- | :---: | :---: | :---: |
-| **Render** *(Recommended)* | Easiest zero-config setup, native Blueprint (`render.yaml`) | Yes (Free web service) | Yes (Attach 1 GB persistent disk) | ~2 min |
-| **Railway** | Developer experience, instant GitHub repo sync | $5 trial credit | Yes (Attach Railway Volume) | ~1 min |
-| **Google Cloud Run** | Enterprise scalability, serverless pay-per-use | Yes (2M requests/mo free) | Ephemeral or Cloud Storage/GCS Fuse | ~3 min |
-| **Self-Hosted Docker** | Full privacy and on-premise VPS control | Any VPS ($4/mo) | Yes (`-v plangenie_data:/app/data`) | ~1 min |
-
----
-
-### Option 1: Deploy to Render (Recommended — 1-Click / Blueprint)
-
-Render provides automatic SSL, native Python 3.11 runtimes, and persistent disk mounting for SQLite.
-
-1. Create a free account at [render.com](https://render.com/).
-2. Click **New +** → **Blueprint**.
-3. Connect your GitHub repository: `https://github.com/SAGEOFCODING/PlanGenie`.
-4. Render automatically reads [`render.yaml`](render.yaml) and configures:
-   - Build Command: `pip install -r requirements.txt`
-   - Start Command: `gunicorn --workers=2 --threads=4 --timeout=60 app:app`
-   - Persistent Disk: Mounted to `/app/data` (for `events.db`)
-5. In the Environment Variables settings, add your optional Gemini API key:
-   - `GEMINI_API_KEY`: `AIzaSy...` (Optional, enables live Gemini GenAI)
-   - `AI_PROVIDER`: `gemini`
-6. Click **Apply**. Your app will be live at `https://plangenie.onrender.com` in ~2 minutes with automatic HTTPS.
+| Platform | Cost | Credit Card Required? | Free Resources | Best For |
+| :--- | :---: | :---: | :---: | :--- |
+| **Render.com** *(Top Pick)* | **$0** | **NO** | 512 MB RAM, 0.1 CPU, Free HTTPS | 1-Click deploy from GitHub via `render.yaml` |
+| **Hugging Face Spaces** | **$0** | **NO** | **16 GB RAM, 2 vCPUs**, Free HTTPS | High-performance Docker deployment |
+| **PythonAnywhere** | **$0** | **NO** | 512 MB permanent storage, WSGI | Simple permanent Python hosting |
+| **Koyeb** | **$0** | **NO** | 512 MB RAM, global edge network | Micro container web service |
 
 ---
 
-### Option 2: Deploy to Railway
+### Option 1: Render Free Web Service (Recommended — $0 / No Card)
 
-1. Sign in to [railway.app](https://railway.app/) using GitHub.
-2. Click **New Project** → **Deploy from GitHub repo** → select `PlanGenie`.
-3. Railway automatically detects [`Procfile`](Procfile) and [`Dockerfile`](Dockerfile).
-4. Add a Persistent Volume:
-   - Click your service → **Settings** → **Volumes** → **Add Volume**.
-   - Mount path: `/app/data`
-5. Set Environment Variables:
-   - `PORT`: `5000` (or Railway default)
-   - `DATABASE_PATH`: `/app/data/events.db`
-   - `GEMINI_API_KEY`: *(your key)*
-6. Railway generates a public domain (e.g. `https://plangenie.up.railway.app`).
+Render lets you host web services for **$0 forever** without asking for billing details:
+
+1. Sign up for free at **[render.com](https://render.com/)** using your GitHub account.
+2. In the Render dashboard, click **New +** → **Web Service**.
+3. Select **`SAGEOFCODING/PlanGenie`** from your GitHub repositories.
+4. Fill in the basic settings (Render auto-populates most from the repo):
+   - **Environment:** `Python 3`
+   - **Build Command:** `pip install -r requirements.txt`
+   - **Start Command:** `gunicorn --workers=2 --threads=4 --timeout=60 app:app`
+   - **Instance Type:** Select **Free** ($0 / month)
+5. *(Optional)* Under Environment Variables, add:
+   - `GEMINI_API_KEY`: *(your free Gemini API key from Google AI Studio)*
+6. Click **Deploy Web Service**. Your application is live at `https://plangenie.onrender.com` in ~2 minutes with free automatic SSL.
 
 ---
 
-### Option 3: Deploy with Docker (Any VPS or Cloud Run)
+### Option 2: Hugging Face Spaces (Docker — $0 / 16 GB RAM Free)
 
-Build and run the production container locally or on any cloud server:
+Hugging Face provides **16 GB RAM and 2 vCPUs for free** without any credit card:
 
-```bash
-# Build the production container
-docker build -t plangenie:latest .
+1. Sign in or register at **[huggingface.co](https://huggingface.co/)**.
+2. Click your profile avatar → **New Space**.
+3. Name it `PlanGenie`, select **Docker** as the Space SDK, and select **Blank**.
+4. Clone the space repo or connect it to GitHub:
+   - In your local terminal, add the HF space remote:
+     ```bash
+     git remote add space https://huggingface.co/spaces/YOUR_USERNAME/PlanGenie
+     git push space main
+     ```
+5. Hugging Face automatically builds the [`Dockerfile`](Dockerfile) and starts PlanGenie on port `7860` with a permanent public HTTPS address.
 
-# Run container with persistent data volume and port binding
-docker run -d \
-  --name plangenie \
-  -p 5000:5000 \
-  -e GEMINI_API_KEY="your-gemini-api-key" \
-  -e FLASK_SECRET_KEY="your-random-secret-key" \
-  -v plangenie_data:/app/data \
-  --restart unless-stopped \
-  plangenie:latest
-```
+---
+
+### Option 3: PythonAnywhere (100% Free / Permanent Storage)
+
+1. Register a free account at **[pythonanywhere.com](https://www.pythonanywhere.com/)**.
+2. Go to the **Web** tab and click **Add a new web app** → Select **Flask** → **Python 3.10**.
+3. In the Bash console, clone your repo:
+   ```bash
+   git clone https://github.com/SAGEOFCODING/PlanGenie.git
+   pip install -r PlanGenie/requirements.txt
+   ```
+4. Point the WSGI configuration file to `PlanGenie/app.py`. Your app will be live at `https://yourusername.pythonanywhere.com`.
 
 Verify container health:
 ```bash

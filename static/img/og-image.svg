@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <rect width="1200" height="630" fill="#faf6f0"/>
+  <rect x="60" y="60" width="1080" height="510" rx="24" fill="#f5f1ea" stroke="#c4c8bc" stroke-width="2"/>
+  
+  <!-- Emblem Badge -->
+  <rect x="120" y="120" width="72" height="72" rx="16" fill="#4a7c59"/>
+  <path d="M156 136 C144 144 136 156 139 170 C149 173 162 165 170 155 C167 145 163 139 156 136 Z" fill="#faf6f0"/>
+  <circle cx="156" cy="176" r="4" fill="#705c30"/>
+
+  <!-- Brand & Subtitle -->
+  <text x="212" y="152" font-family="'Literata', Georgia, serif" font-size="32" font-weight="700" fill="#2e3230">PlanGenie</text>
+  <text x="212" y="180" font-family="'Nunito Sans', sans-serif" font-size="16" font-weight="600" fill="#705c30" letter-spacing="2">TERRA ORGANIC EVENT ARCHITECT</text>
+
+  <!-- Main Headline -->
+  <text x="120" y="270" font-family="'Literata', Georgia, serif" font-size="52" font-weight="700" fill="#2e3230">Rooted Warmth in Intelligent</text>
+  <text x="120" y="335" font-family="'Literata', Georgia, serif" font-size="52" font-weight="700" fill="#4a7c59">Event Planning & Execution</text>
+
+  <!-- Descriptive Body -->
+  <text x="120" y="400" font-family="'Nunito Sans', sans-serif" font-size="22" fill="#5c615c">
+    GenAI-powered assistant for weddings, milestone birthdays, and community gatherings.
+  </text>
+  <text x="120" y="435" font-family="'Nunito Sans', sans-serif" font-size="22" fill="#5c615c">
+    Real-time zero-float budget calculation, critical-path timelines, and Day-of micro-schedules.
+  </text>
+
+  <!-- Feature Pills -->
+  <rect x="120" y="475" width="220" height="42" rx="12" fill="#4a7c59"/>
+  <text x="230" y="502" font-family="'Nunito Sans', sans-serif" font-size="16" font-weight="700" fill="#ffffff" text-anchor="middle">Integer Budget Engine</text>
+
+  <rect x="360" y="475" width="230" height="42" rx="12" fill="#f0ece4" stroke="#c4c8bc" stroke-width="1.5"/>
+  <text x="475" y="502" font-family="'Nunito Sans', sans-serif" font-size="16" font-weight="700" fill="#4a7c59" text-anchor="middle">Critical-Path Milestones</text>
+
+  <rect x="610" y="475" width="210" height="42" rx="12" fill="#f0ece4" stroke="#c4c8bc" stroke-width="1.5"/>
+  <text x="715" y="502" font-family="'Nunito Sans', sans-serif" font-size="16" font-weight="700" fill="#705c30" text-anchor="middle">Day-of Run of Show</text>
+
+  <rect x="840" y="475" width="220" height="42" rx="12" fill="#f0ece4" stroke="#c4c8bc" stroke-width="1.5"/>
+  <text x="950" y="502" font-family="'Nunito Sans', sans-serif" font-size="16" font-weight="700" fill="#2e3230" text-anchor="middle">100% Offline Resilience</text>
+</svg>

@@ -36,6 +36,8 @@ def set_security_headers(response):
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
     return response
 
+from flask import Response, send_from_directory
+
 # --- Error Handlers (Safe, non-leaking JSON responses) ---
 @app.errorhandler(400)
 def handle_bad_request(e):
@@ -43,7 +45,9 @@ def handle_bad_request(e):
 
 @app.errorhandler(404)
 def handle_not_found(e):
-    return jsonify({"success": False, "error": "The requested resource was not found."}), 404
+    if request.path.startswith("/api/"):
+        return jsonify({"success": False, "error": "The requested resource was not found."}), 404
+    return render_template("404.html"), 404
 
 @app.errorhandler(413)
 def handle_payload_too_large(e):
@@ -53,6 +57,75 @@ def handle_payload_too_large(e):
 def handle_internal_error(e):
     logger.error(f"Internal server error: {e}")
     return jsonify({"success": False, "error": "An unexpected server error occurred. Please try again."}), 500
+
+# --- SEO & Machine Telemetry Endpoints ---
+@app.route("/robots.txt")
+def robots_txt():
+    content = """User-agent: *
+Allow: /
+Sitemap: https://plangenie.example.com/sitemap.xml
+"""
+    return Response(content, mimetype="text/plain")
+
+@app.route("/sitemap.xml")
+def sitemap_xml():
+    xml = """<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://plangenie.example.com/</loc>
+    <lastmod>2026-10-20</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://plangenie.example.com/llms.txt</loc>
+    <lastmod>2026-10-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+</urlset>"""
+    return Response(xml, mimetype="application/xml")
+
+@app.route("/llms.txt")
+def llms_txt():
+    content = """# PlanGenie — GenAI-Powered Event Planning Assistant
+
+> Rooted Warmth in Event Architecture. Intelligent budgeting, critical-path timelines, and personalized ideas for weddings, milestone birthdays, and community gatherings.
+
+## Overview
+PlanGenie provides full-lifecycle event architecture, integrating:
+- **Integer Financial Engine**: Exact currency allocation across catering, venue, decor, photography, and contingency reserves with zero floating-point drift.
+- **Critical-Path Milestone Sequencing**: Reverse-engineered timeline planning from event day back to contract execution.
+- **Day-of Run of Show**: Minute-by-minute ceremonial cues synchronized to solar dusk timing.
+- **Personalized Ideation**: Tailored culinary profiles, sensory cues, and accessibility constraints.
+- **Resilient AI Execution**: Live GenAI (Google Gemini or OpenAI) with 100% offline rule-based fallback.
+
+## API Endpoints
+- `GET /api/config`: Retrieves provider capabilities, supported currencies, and operational telemetry.
+- `GET /api/events`: Lists all stored event blueprints.
+- `POST /api/events`: Creates an event and synthesizes a complete event plan.
+- `GET /api/events/<id>`: Returns full event details with budget summary and timeline.
+- `PATCH /api/events/<id>/budget/<item_id>`: Updates actual expenditure for an expense category.
+- `POST /api/events/<id>/budget`: Appends an expense category.
+- `DELETE /api/events/<id>/budget/<item_id>`: Removes an expense category.
+- `POST /api/events/<id>/tasks`: Creates a custom milestone task.
+- `PATCH /api/events/<id>/tasks/<task_id>`: Toggles milestone completion state.
+- `DELETE /api/events/<id>/tasks/<task_id>`: Deletes a milestone.
+- `POST /api/events/<id>/vendors`: Adds a vendor entry.
+- `PATCH /api/events/<id>/vendors/<vendor_id>`: Updates vendor procurement status.
+- `DELETE /api/events/<id>/vendors/<vendor_id>`: Removes a vendor.
+- `DELETE /api/events/<id>`: Cascading deletion of an entire event blueprint.
+
+## Guidelines for LLM Agents
+- Validate that `budget` is a positive integer >= 100.
+- Verify `event_date` is not in the past.
+- Always preserve accessibility accommodations (e.g., ramps, quiet spaces) and dietary constraints.
+"""
+    return Response(content, mimetype="text/markdown")
+
+@app.route("/favicon.ico")
+def favicon():
+    return send_from_directory("static", "favicon.svg", mimetype="image/svg+xml")
 
 # --- Frontend Entrypoint ---
 @app.route("/")

@@ -271,6 +271,26 @@
       }
     });
 
+    // Update Semantic Breadcrumbs Label
+    const breadcrumb = document.getElementById('breadcrumbActiveView');
+    if (breadcrumb) {
+      const titles = {
+        'timeline': 'Timeline Engine',
+        'overview': 'Overview & Hub',
+        'budget': 'Smart Budgeting',
+        'vendors': 'Vendor Deck',
+        'ideas': 'AI Ideation Studio',
+        'create': 'Event Specification'
+      };
+      breadcrumb.textContent = titles[targetId] || 'Event Workspace';
+    }
+
+    // Auto-close mobile drawer when navigation item is clicked
+    const drawer = document.getElementById('sidebarDrawer');
+    if (drawer && window.innerWidth < 1024) {
+      drawer.classList.add('-translate-x-full');
+    }
+
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -385,6 +405,21 @@
     if (elements.btnHeaderNewEvent) elements.btnHeaderNewEvent.addEventListener('click', () => setActiveView('create'));
     if (elements.btnCancelCreate) elements.btnCancelCreate.addEventListener('click', () => setActiveView('timeline'));
     if (elements.btnHeaderPrint) elements.btnHeaderPrint.addEventListener('click', () => window.print());
+
+    // Mobile Drawer Toggle
+    const btnMobileToggle = document.getElementById('btnMobileMenuToggle');
+    const btnMobileClose = document.getElementById('btnMobileCloseDrawer');
+    const sidebarDrawer = document.getElementById('sidebarDrawer');
+    if (btnMobileToggle && sidebarDrawer) {
+      btnMobileToggle.addEventListener('click', () => {
+        sidebarDrawer.classList.toggle('-translate-x-full');
+      });
+    }
+    if (btnMobileClose && sidebarDrawer) {
+      btnMobileClose.addEventListener('click', () => {
+        sidebarDrawer.classList.add('-translate-x-full');
+      });
+    }
 
     if (elements.omniSearchInput) {
       elements.omniSearchInput.addEventListener('keydown', (e) => {

@@ -4,10 +4,12 @@
 [![Flask Version](https://img.shields.io/badge/flask-3.0%2B-green.svg)](https://flask.palletsprojects.com/)
 [![Test Suite](https://img.shields.io/badge/tests-52%2F52%20passing-brightgreen.svg)](tests/)
 [![PlanGenie CI](https://github.com/SAGEOFCODING/PlanGenie/actions/workflows/ci.yml/badge.svg)](https://github.com/SAGEOFCODING/PlanGenie/actions/workflows/ci.yml)
+[![Live Demo](https://img.shields.io/badge/live%20demo-online-success.svg)](https://plangenie-gewl.onrender.com)
 [![Design System](https://img.shields.io/badge/design-Terra%20Organic-4a7c59.svg)](#6-terra-organic-design-system)
 [![License](https://img.shields.io/badge/license-MIT-amber.svg)](LICENSE)
-[![Repository Size](https://img.shields.io/badge/repo%20size-%3C%201%20MB-success.svg)](#12-github-repository-compliance)
+[![Repository Size](https://img.shields.io/badge/repo%20size-%3C%201%20MB-success.svg)](#13-github-repository-compliance)
 
+> 🌐 **Live Production Website:** [https://plangenie-gewl.onrender.com](https://plangenie-gewl.onrender.com)  
 > **A production-grade, secure, and offline-resilient event planning platform for Weddings, Milestone Birthdays, and Community Gatherings.** Grounded in the **Terra ("Rooted Warmth")** organic design philosophy.
 
 ---
@@ -379,6 +381,7 @@ curl http://localhost:5000/api/events
 ## 13. GitHub Repository Compliance
 
 - **Public Repository URL:** [https://github.com/SAGEOFCODING/PlanGenie](https://github.com/SAGEOFCODING/PlanGenie)
+- **Live Production URL:** [https://plangenie-gewl.onrender.com](https://plangenie-gewl.onrender.com)
 - **Branch Count:** Exactly 1 branch (`main`).
 - **Repository Size:** Strictly below 10 MB (~0.68 MB total repository size, zero heavy binary assets).
 - **Clean Repository:** Sensitive files (`.env`, `*.db`, `__pycache__`, virtual environments) are ignored by `.gitignore` and never committed.

@@ -2,7 +2,8 @@
 
 [![Python Version](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12%20%7C%203.13%20%7C%203.14-blue.svg)](https://www.python.org/)
 [![Flask Version](https://img.shields.io/badge/flask-3.0%2B-green.svg)](https://flask.palletsprojects.com/)
-[![Test Suite](https://img.shields.io/badge/tests-41%2F41%20passing-brightgreen.svg)](tests/)
+[![Test Suite](https://img.shields.io/badge/tests-52%2F52%20passing-brightgreen.svg)](tests/)
+[![PlanGenie CI](https://github.com/SAGEOFCODING/PlanGenie/actions/workflows/ci.yml/badge.svg)](https://github.com/SAGEOFCODING/PlanGenie/actions/workflows/ci.yml)
 [![Design System](https://img.shields.io/badge/design-Terra%20Organic-4a7c59.svg)](#6-terra-organic-design-system)
 [![License](https://img.shields.io/badge/license-MIT-amber.svg)](LICENSE)
 [![Repository Size](https://img.shields.io/badge/repo%20size-%3C%201%20MB-success.svg)](#12-github-repository-compliance)

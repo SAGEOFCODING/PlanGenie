@@ -92,9 +92,10 @@ class Database:
 
     @contextmanager
     def get_connection(self):
-        """Context manager providing a high-performance, parameterized SQLite connection."""
-        conn = sqlite3.connect(self.db_path, timeout=10.0)
+        """Context manager providing a high-performance, parameterized SQLite connection with busy timeout."""
+        conn = sqlite3.connect(self.db_path, timeout=30.0)
         conn.row_factory = sqlite3.Row
+        conn.execute("PRAGMA busy_timeout = 30000;")
         conn.execute("PRAGMA foreign_keys = ON;")
         conn.execute("PRAGMA synchronous = NORMAL;")
         conn.execute("PRAGMA temp_store = MEMORY;")
@@ -108,11 +109,42 @@ class Database:
             conn.close()
 
     def init_db(self):
-        """Initializes database schema and WAL mode if tables do not exist."""
-        with self.get_connection() as conn:
-            conn.execute("PRAGMA journal_mode = WAL;")
-            conn.execute("PRAGMA cache_size = -16000;")
-            conn.executescript(SCHEMA_SQL)
+        """Initializes database schema and WAL mode safely under multi-process Gunicorn concurrency."""
+        import time
+        max_retries = 8
+        for attempt in range(max_retries):
+            try:
+                with self.get_connection() as conn:
+                    # Check if schema already initialized
+                    table_exists = conn.execute(
+                        "SELECT name FROM sqlite_master WHERE type='table' AND name='events';"
+                    ).fetchone()
+                    
+                    # Safe WAL mode check
+                    try:
+                        current_mode = conn.execute("PRAGMA journal_mode;").fetchone()
+                        if current_mode and str(current_mode[0]).lower() != "wal":
+                            conn.execute("PRAGMA journal_mode = WAL;")
+                    except sqlite3.OperationalError:
+                        pass  # Another concurrent worker is switching mode
+
+                    conn.execute("PRAGMA cache_size = -16000;")
+
+                    if not table_exists:
+                        conn.executescript(SCHEMA_SQL)
+                return
+            except sqlite3.OperationalError as e:
+                if "locked" in str(e).lower() and attempt < max_retries - 1:
+                    time.sleep(0.3 * (attempt + 1))
+                    continue
+                # If table already exists despite error, continue safely
+                try:
+                    with self.get_connection() as conn:
+                        if conn.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='events';").fetchone():
+                            return
+                except Exception:
+                    pass
+                raise
 
     def create_event(self, event_data):
         """Inserts a new event record using parameterized SQL."""

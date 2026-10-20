@@ -26,4 +26,4 @@ EXPOSE 5000 7860 8080
 HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:${PORT:-5000}/api/events || exit 1
 
-CMD ["sh", "-c", "gunicorn --workers=2 --threads=4 --timeout=60 --bind=0.0.0.0:${PORT:-5000} app:app"]
+CMD ["sh", "-c", "gunicorn --preload --workers=2 --threads=4 --timeout=60 --bind=0.0.0.0:${PORT:-5000} app:app"]

@@ -253,7 +253,7 @@ python -m unittest discover tests
 
 **Results:**
 ```
-Ran 39 tests in 0.931s
+Ran 41 tests in 0.840s
 
 OK
 ```
@@ -261,10 +261,10 @@ OK
 ### Test Coverage Breakdown:
 1. `tests/test_validation.py` (9 tests): Validates wedding, birthday, and community event inputs; rejects missing fields, past dates, non-positive budgets, zero guest counts, and oversize inputs.
 2. `tests/test_budget.py` (6 tests): Validates integer arithmetic, guarantees allocation sums equal total budgets across categories, checks remaining balances, and verifies over-budget warnings.
-3. `tests/test_timeline.py` (4 tests): Tests relative deadline calculations, short-notice event interval scaling, and overdue task identification.
+3. `tests/test_timeline.py` (6 tests): Tests relative deadline calculations, short-notice event interval scaling, overdue task identification, Day-of Run of Show generation, and predictive bottleneck synthesis.
 4. `tests/test_database.py` (5 tests): Tests SQLite CRUD operations, cascade deletion of related child records, task completion toggling, and budget expense updates.
 5. `tests/test_ai_service.py` (6 tests): Tests JSON code-fence cleaning, structured schema validation, proportional budget rescaling when model outputs exceed ceilings, and fallback execution.
-6. `tests/test_routes.py` (9 tests): Tests HTTP status codes, JSON payload responses, REST endpoints for events, budget tracking, task toggling, and vendor updates.
+6. `tests/test_routes.py` (9 tests): Tests HTTP status codes, JSON payload responses, REST endpoints for events, budget tracking, task toggling, vendor updates, and run of show payloads.
 
 ---
 

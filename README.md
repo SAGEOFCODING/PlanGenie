@@ -308,16 +308,92 @@ OK
 
 ---
 
-## 12. GitHub Repository Compliance
+## 12. Production Deployment Guide
+
+PlanGenie is completely containerized and WSGI-ready with `gunicorn`, `Dockerfile`, `Procfile`, and `render.yaml`. Below are the recommended deployment targets:
+
+### 🌟 Platform Recommendations Summary
+
+| Platform | Best For | Free Tier? | SQLite Persistence | Deploy Time |
+| :--- | :--- | :---: | :---: | :---: |
+| **Render** *(Recommended)* | Easiest zero-config setup, native Blueprint (`render.yaml`) | Yes (Free web service) | Yes (Attach 1 GB persistent disk) | ~2 min |
+| **Railway** | Developer experience, instant GitHub repo sync | $5 trial credit | Yes (Attach Railway Volume) | ~1 min |
+| **Google Cloud Run** | Enterprise scalability, serverless pay-per-use | Yes (2M requests/mo free) | Ephemeral or Cloud Storage/GCS Fuse | ~3 min |
+| **Self-Hosted Docker** | Full privacy and on-premise VPS control | Any VPS ($4/mo) | Yes (`-v plangenie_data:/app/data`) | ~1 min |
+
+---
+
+### Option 1: Deploy to Render (Recommended — 1-Click / Blueprint)
+
+Render provides automatic SSL, native Python 3.11 runtimes, and persistent disk mounting for SQLite.
+
+1. Create a free account at [render.com](https://render.com/).
+2. Click **New +** → **Blueprint**.
+3. Connect your GitHub repository: `https://github.com/SAGEOFCODING/PlanGenie`.
+4. Render automatically reads [`render.yaml`](render.yaml) and configures:
+   - Build Command: `pip install -r requirements.txt`
+   - Start Command: `gunicorn --workers=2 --threads=4 --timeout=60 app:app`
+   - Persistent Disk: Mounted to `/app/data` (for `events.db`)
+5. In the Environment Variables settings, add your optional Gemini API key:
+   - `GEMINI_API_KEY`: `AIzaSy...` (Optional, enables live Gemini GenAI)
+   - `AI_PROVIDER`: `gemini`
+6. Click **Apply**. Your app will be live at `https://plangenie.onrender.com` in ~2 minutes with automatic HTTPS.
+
+---
+
+### Option 2: Deploy to Railway
+
+1. Sign in to [railway.app](https://railway.app/) using GitHub.
+2. Click **New Project** → **Deploy from GitHub repo** → select `PlanGenie`.
+3. Railway automatically detects [`Procfile`](Procfile) and [`Dockerfile`](Dockerfile).
+4. Add a Persistent Volume:
+   - Click your service → **Settings** → **Volumes** → **Add Volume**.
+   - Mount path: `/app/data`
+5. Set Environment Variables:
+   - `PORT`: `5000` (or Railway default)
+   - `DATABASE_PATH`: `/app/data/events.db`
+   - `GEMINI_API_KEY`: *(your key)*
+6. Railway generates a public domain (e.g. `https://plangenie.up.railway.app`).
+
+---
+
+### Option 3: Deploy with Docker (Any VPS or Cloud Run)
+
+Build and run the production container locally or on any cloud server:
+
+```bash
+# Build the production container
+docker build -t plangenie:latest .
+
+# Run container with persistent data volume and port binding
+docker run -d \
+  --name plangenie \
+  -p 5000:5000 \
+  -e GEMINI_API_KEY="your-gemini-api-key" \
+  -e FLASK_SECRET_KEY="your-random-secret-key" \
+  -v plangenie_data:/app/data \
+  --restart unless-stopped \
+  plangenie:latest
+```
+
+Verify container health:
+```bash
+curl http://localhost:5000/api/events
+```
+
+---
+
+## 13. GitHub Repository Compliance
 
 - **Public Repository URL:** [https://github.com/SAGEOFCODING/PlanGenie](https://github.com/SAGEOFCODING/PlanGenie)
 - **Branch Count:** Exactly 1 branch (`main`).
-- **Repository Size:** Strictly below 10 MB (~0.32 MB total repository size, zero heavy binary assets).
+- **Repository Size:** Strictly below 10 MB (~0.68 MB total repository size, zero heavy binary assets).
 - **Clean Repository:** Sensitive files (`.env`, `*.db`, `__pycache__`, virtual environments) are ignored by `.gitignore` and never committed.
+- **Continuous Integration:** Automated test matrix across Python 3.10, 3.11, and 3.12 via GitHub Actions.
 - **Repository Visibility:** Public.
 
 ---
 
-## 13. License
+## 14. License
 
 Distributed under the **MIT License**. See [LICENSE](LICENSE) for full details.

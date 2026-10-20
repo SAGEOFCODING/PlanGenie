@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: plangenie
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn --workers=2 --threads=4 --timeout=60 app:app
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: FLASK_SECRET_KEY
+        generateValue: true
+      - key: AI_PROVIDER
+        value: gemini
+      - key: GEMINI_API_KEY
+        sync: false
+    disk:
+      name: plangenie-data
+      mountPath: /app/data
+      sizeGB: 1

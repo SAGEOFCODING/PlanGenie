@@ -606,4 +606,8 @@ def delete_vendor(event_id, vendor_id):
         return jsonify({"success": False, "error": "Failed to delete vendor item."}), 500
 
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=5000, debug=False)
+    import os
+    port = int(os.environ.get("PORT", 5000))
+    host = os.environ.get("HOST", "0.0.0.0")
+    debug = os.environ.get("FLASK_DEBUG", "0").lower() in ("1", "true")
+    app.run(host=host, port=port, debug=debug)

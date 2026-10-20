@@ -1,3 +1,7 @@
 # Core web framework and HTTP client
 Flask>=3.0.0
 requests>=2.31.0
+
+# Production WSGI application servers
+gunicorn>=22.0.0
+waitress>=3.0.0

@@ -1,6 +1,6 @@
 /**
  * PlanGenie - GenAI-Powered Event Planning Assistant
- * Neumorphic UI Application Logic
+ * Terra Organic Design ("Rooted Warmth") Application Logic
  * Pure Vanilla JavaScript with zero external framework dependencies.
  * Uses strict DOM manipulation with textContent to eliminate XSS risks.
  */
@@ -225,7 +225,7 @@
     }
   }
 
-  // --- Navigation & View Switching ---
+  // --- Navigation & View Switching (Terra Styling) ---
   const NAV_ITEMS = [
     { btn: elements.navItemOverview, view: elements.viewOverview, id: 'overview' },
     { btn: elements.navItemTimeline, view: elements.viewTimeline, id: 'timeline' },
@@ -237,7 +237,6 @@
   function setActiveView(targetId) {
     state.currentView = targetId;
 
-    // Show or hide views
     const views = [
       elements.viewCreateEvent,
       elements.viewTimeline,
@@ -253,10 +252,9 @@
 
     if (targetId === 'create') {
       if (elements.viewCreateEvent) elements.viewCreateEvent.style.display = 'block';
-      // Deselect nav buttons
       NAV_ITEMS.forEach(item => {
         if (item.btn) {
-          item.btn.className = "flex items-center gap-space-sm px-space-md py-space-sm rounded-DEFAULT text-on-surface-variant hover:text-on-surface transition-all shadow-[2px_2px_5px_rgba(190,182,170,0.25),-2px_-2px_5px_rgba(255,255,255,0.8)] text-sm font-semibold interactive-btn text-left w-full";
+          item.btn.className = "flex items-center gap-3 px-4 py-2.5 rounded-[12px] text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-all text-sm font-semibold text-left w-full";
         }
       });
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -267,9 +265,9 @@
       if (!item.btn || !item.view) return;
       if (item.id === targetId) {
         item.view.style.display = 'block';
-        item.btn.className = "flex items-center gap-space-sm px-space-md py-space-sm rounded-DEFAULT bg-surface text-primary shadow-[inset_3px_3px_6px_rgba(190,182,170,0.45),inset_-3px_-3px_6px_rgba(255,255,255,0.95)] border-l-4 border-primary text-sm font-bold text-left w-full";
+        item.btn.className = "flex items-center gap-3 px-4 py-2.5 rounded-[12px] bg-surface-container text-primary border-l-4 border-primary text-sm font-bold text-left w-full shadow-terra-subtle";
       } else {
-        item.btn.className = "flex items-center gap-space-sm px-space-md py-space-sm rounded-DEFAULT text-on-surface-variant hover:text-on-surface transition-all shadow-[2px_2px_5px_rgba(190,182,170,0.25),-2px_-2px_5px_rgba(255,255,255,0.8)] text-sm font-semibold interactive-btn text-left w-full";
+        item.btn.className = "flex items-center gap-3 px-4 py-2.5 rounded-[12px] text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-all text-sm font-semibold text-left w-full";
       }
     });
 
@@ -278,7 +276,6 @@
 
   // --- Application Initialization ---
   async function init() {
-    // Setup date picker default (+120 days) and minimum (today)
     const todayStr = new Date().toISOString().split('T')[0];
     if (elements.eventDate) {
       elements.eventDate.min = todayStr;
@@ -311,10 +308,8 @@
     try {
       await refreshSavedEvents();
       if (state.savedEvents.length > 0) {
-        // Load the most recently created/updated event
         await loadEventById(state.savedEvents[0].id);
       } else {
-        // Automatically seed the demo event (Elena & Julian's Wedding) to immediately match Stitch UI
         await seedDemoEvent();
       }
     } catch (e) {
@@ -332,12 +327,12 @@
       guests: 160,
       budget: 8500000,
       currency: "INR",
-      theme: "Romantic Tuscan Garden & Marigold Elegance",
+      theme: "Rooted Warmth & Botanical Courtyard Elegance",
       venue_type: "hybrid",
       priorities: "Michelin-tier culinary tasting, candid twilight cinematography, lush botanical floral styling",
-      dietary: "Vegan options, gluten-free, sommelier wine pairing, Italian prosecco bar",
-      accessibility: "Wheelchair ramps for garden pavilion, senior lounge seating",
-      notes: "10 PM courtyard curfew, strict zero single-use plastic, custom lighting rig at dusk"
+      dietary: "Organic farm-to-table, vegan options, sommelier wine pairing, Italian prosecco bar",
+      accessibility: "Smooth garden ramps for orangery pavilion, shaded lounge seating for elders",
+      notes: "10 PM courtyard curfew, strict zero single-use plastic, custom twilight lighting rig"
     };
 
     try {
@@ -376,25 +371,21 @@
 
   // --- Event Listeners Binding ---
   function bindEventListeners() {
-    // Navigation items
     if (elements.navItemOverview) elements.navItemOverview.addEventListener('click', () => setActiveView('overview'));
     if (elements.navItemTimeline) elements.navItemTimeline.addEventListener('click', () => setActiveView('timeline'));
     if (elements.navItemBudget) elements.navItemBudget.addEventListener('click', () => setActiveView('budget'));
     if (elements.navItemVendors) elements.navItemVendors.addEventListener('click', () => setActiveView('vendors'));
     if (elements.navItemIdeas) elements.navItemIdeas.addEventListener('click', () => setActiveView('ideas'));
 
-    // Sidebar active event card & Saved plans button
     if (elements.sidebarActiveEventCard) elements.sidebarActiveEventCard.addEventListener('click', openSavedEventsModal);
     if (elements.navItemSaved) elements.navItemSaved.addEventListener('click', openSavedEventsModal);
     if (elements.btnCloseSavedModal) elements.btnCloseSavedModal.addEventListener('click', () => elements.modalSavedEvents.classList.remove('active'));
 
-    // Header actions
     if (elements.btnLogoHome) elements.btnLogoHome.addEventListener('click', () => setActiveView('timeline'));
     if (elements.btnHeaderNewEvent) elements.btnHeaderNewEvent.addEventListener('click', () => setActiveView('create'));
     if (elements.btnCancelCreate) elements.btnCancelCreate.addEventListener('click', () => setActiveView('timeline'));
     if (elements.btnHeaderPrint) elements.btnHeaderPrint.addEventListener('click', () => window.print());
 
-    // Omnibar search / natural language input
     if (elements.omniSearchInput) {
       elements.omniSearchInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
@@ -419,7 +410,6 @@
       });
     }
 
-    // Event Creation Form
     if (elements.formEventCreate) elements.formEventCreate.addEventListener('submit', handleCreateEvent);
     if (elements.eventCurrency) {
       elements.eventCurrency.addEventListener('change', (e) => {
@@ -429,7 +419,6 @@
       });
     }
 
-    // Timeline view filter chips
     if (elements.filterAll) {
       elements.filterAll.addEventListener('click', () => {
         state.taskFilter = 'all';
@@ -452,25 +441,23 @@
       });
     }
 
-    // Timeline View Switcher buttons
     [elements.btnViewGantt, elements.btnViewCards, elements.btnViewDayOf, elements.btnViewCritical].forEach(btn => {
       if (btn) {
         btn.addEventListener('click', () => {
           [elements.btnViewGantt, elements.btnViewCards, elements.btnViewDayOf, elements.btnViewCritical].forEach(b => {
             if (b) {
-              b.className = "px-space-md py-space-xs rounded-full text-on-surface-variant text-xs whitespace-nowrap hover:text-on-surface transition-all font-medium interactive-btn";
+              b.className = "px-4 py-1.5 rounded-[10px] text-on-surface-variant text-xs whitespace-nowrap hover:text-on-surface transition-all font-medium";
             }
           });
-          btn.className = "px-space-md py-space-xs rounded-full bg-surface text-primary text-xs whitespace-nowrap shadow-[3px_3px_8px_rgba(190,182,170,0.45),-3px_-3px_8px_rgba(255,255,255,0.9)] flex items-center gap-1.5 font-bold interactive-btn";
+          btn.className = "px-4 py-1.5 rounded-[10px] bg-surface text-primary text-xs whitespace-nowrap shadow-terra-subtle flex items-center gap-1.5 font-bold border border-primary/20";
           showToast(`Switched to ${btn.textContent.trim()}`, 'info');
         });
       }
     });
 
-    // AI Acceleration Bar Dismiss / Resolve
     if (elements.btnDismissAiBar) {
       elements.btnDismissAiBar.addEventListener('click', () => {
-        const bar = elements.btnDismissAiBar.closest('.anim-fade-up');
+        const bar = elements.btnDismissAiBar.closest('div.p-5');
         if (bar) bar.style.display = 'none';
         showToast('Predictive alert dismissed.', 'info');
       });
@@ -480,7 +467,7 @@
       elements.btnResolveAiBar.addEventListener('click', () => {
         if (elements.pbStatus) {
           elements.pbStatus.textContent = "Resolved & Synchronized";
-          elements.pbStatus.className = "px-2 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed font-semibold text-[11px] border border-primary/20";
+          elements.pbStatus.className = "px-2.5 py-0.5 rounded-full bg-primary/10 text-primary font-bold text-[11px] border border-primary/20";
         }
         if (elements.pbBottleneck) {
           elements.pbBottleneck.textContent = "AI successfully adjusted vendor briefings buffer. All milestone dependencies verified.";
@@ -489,14 +476,12 @@
       });
     }
 
-    // Auto-Sequence button
     if (elements.btnAutoSequence) {
       elements.btnAutoSequence.addEventListener('click', () => {
-        showToast('Auto-sequenced milestones according to critical path!', 'success');
+        showToast('Auto-sequenced milestones along critical path!', 'success');
       });
     }
 
-    // Modals: Add Milestone Task
     if (elements.btnOpenAddTaskModal) {
       elements.btnOpenAddTaskModal.addEventListener('click', () => {
         const defaultDue = state.currentEvent ? state.currentEvent.event.event_date : '';
@@ -509,7 +494,6 @@
     if (elements.btnCancelAddTask) elements.btnCancelAddTask.addEventListener('click', () => elements.modalAddTask.classList.remove('active'));
     if (elements.formAddTask) elements.formAddTask.addEventListener('submit', handleAddTask);
 
-    // Modals: Add Budget Category
     if (elements.btnOpenAddBudgetModal) {
       elements.btnOpenAddBudgetModal.addEventListener('click', () => elements.modalAddBudget.classList.add('active'));
     }
@@ -517,7 +501,6 @@
     if (elements.btnCancelAddBudget) elements.btnCancelAddBudget.addEventListener('click', () => elements.modalAddBudget.classList.remove('active'));
     if (elements.formAddBudget) elements.formAddBudget.addEventListener('submit', handleAddBudgetItem);
 
-    // Modals: Add Vendor
     if (elements.btnOpenAddVendorModal) {
       elements.btnOpenAddVendorModal.addEventListener('click', () => elements.modalAddVendor.classList.add('active'));
     }
@@ -525,7 +508,6 @@
     if (elements.btnCancelAddVendor) elements.btnCancelAddVendor.addEventListener('click', () => elements.modalAddVendor.classList.remove('active'));
     if (elements.formAddVendor) elements.formAddVendor.addEventListener('submit', handleAddVendor);
 
-    // Confirmation Modal
     if (elements.btnCloseConfirm) elements.btnCloseConfirm.addEventListener('click', hideConfirm);
     if (elements.btnConfirmCancel) elements.btnConfirmCancel.addEventListener('click', hideConfirm);
     if (elements.btnConfirmOk) {
@@ -535,11 +517,9 @@
       });
     }
 
-    // Overview View Actions
     if (elements.btnOverviewEdit) elements.btnOverviewEdit.addEventListener('click', () => setActiveView('create'));
     if (elements.btnOverviewDelete) elements.btnOverviewDelete.addEventListener('click', handleDeleteCurrentEvent);
 
-    // Modal backdrop click dismissal
     [elements.modalSavedEvents, elements.modalAddTask, elements.modalAddBudget, elements.modalAddVendor, elements.modalConfirm].forEach(m => {
       if (m) {
         m.addEventListener('click', (e) => {
@@ -553,9 +533,9 @@
     [elements.filterAll, elements.filterPending, elements.filterCompleted].forEach(chip => {
       if (!chip) return;
       if (chip === activeEl) {
-        chip.className = "px-space-md py-1 rounded-full bg-surface text-primary text-[11px] shadow-[inset_2px_2px_5px_rgba(190,182,170,0.45),inset_-2px_-2px_5px_rgba(255,255,255,0.9)] cursor-pointer font-bold border border-primary/20 interactive-btn";
+        chip.className = "px-3.5 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold border border-primary/25 cursor-pointer";
       } else {
-        chip.className = "px-space-md py-1 rounded-full bg-surface text-on-surface-variant text-[11px] shadow-[3px_3px_6px_rgba(190,182,170,0.35),-3px_-3px_6px_rgba(255,255,255,0.85)] hover:text-on-surface cursor-pointer transition-all border border-outline-variant/30 font-medium interactive-btn";
+        chip.className = "px-3.5 py-1 rounded-full bg-surface-container text-on-surface-variant text-xs hover:text-on-surface cursor-pointer border border-outline-variant/30 transition-all font-semibold";
       }
     });
   }
@@ -584,16 +564,14 @@
 
     if (elements.sidebarEventTitle) elements.sidebarEventTitle.textContent = ev.name;
     if (elements.sidebarEventMeta) elements.sidebarEventMeta.textContent = `${ev.event_date} • ${ev.location}`;
-    if (elements.headerCurrentCat) elements.headerCurrentCat.textContent = `${ev.category.toUpperCase()} • ${ev.guests} Guests`;
+    if (elements.headerCurrentCat) elements.headerCurrentCat.textContent = `Terra ${ev.category.charAt(0).toUpperCase() + ev.category.slice(1)} Suite`;
 
-    // Category icon
     if (elements.sidebarCatIcon) {
       if (ev.category === 'wedding') elements.sidebarCatIcon.textContent = 'celebration';
       else if (ev.category === 'birthday') elements.sidebarCatIcon.textContent = 'cake';
       else elements.sidebarCatIcon.textContent = 'groups';
     }
 
-    // Countdown calculation
     if (elements.dashCountdown) {
       const target = new Date(ev.event_date);
       const now = new Date();
@@ -602,29 +580,24 @@
     }
   }
 
-  // --- Render Timeline Phase-by-Phase (Matches Stitch Design) ---
+  // --- Render Timeline Phase-by-Phase (Terra Organic Design) ---
   function renderTimelineTasks() {
     if (!state.currentEvent || !elements.phasesContainer) return;
 
     const tasks = state.currentEvent.tasks || [];
     elements.phasesContainer.replaceChildren();
 
-    // Filter tasks if needed
     const filteredTasks = tasks.filter(t => {
       if (state.taskFilter === 'pending') return !t.is_completed;
       if (state.taskFilter === 'completed') return t.is_completed;
       return true;
     });
 
-    // Partition tasks into 3 logical phases
-    // Phase 1: Foundation & Venue
-    // Phase 2: Design, Catering & Sensory
-    // Phase 3: Logistics, AV & Transport
     const phase1Tasks = [];
     const phase2Tasks = [];
     const phase3Tasks = [];
 
-    filteredTasks.forEach((task, idx) => {
+    filteredTasks.forEach((task) => {
       const cat = (task.category || '').toLowerCase();
       const title = (task.title || '').toLowerCase();
       if (cat.includes('venue') || cat.includes('legal') || cat.includes('permit') || cat.includes('contract') || title.includes('venue') || title.includes('deposit') || title.includes('contract')) {
@@ -636,7 +609,6 @@
       }
     });
 
-    // If partitioning is uneven or empty (e.g. customized events), distribute evenly
     if (phase1Tasks.length === 0 && phase2Tasks.length === 0 && phase3Tasks.length === 0) {
       tasks.forEach((t, i) => {
         if (i % 3 === 0) phase1Tasks.push(t);
@@ -645,19 +617,18 @@
       });
     }
 
-    // Render Phase 1
+    // Phase 1: Foundation & Venue
     renderPhaseSection({
       phaseNumber: "Phase 01",
       title: "Foundation & Venue",
-      subtitle: "Executed Contract & Financial Escrow",
+      subtitle: "Executed Contract & Escrow Lock",
       icon: "check_circle",
       tasks: phase1Tasks,
       isCompleted: phase1Tasks.length > 0 && phase1Tasks.every(t => t.is_completed),
-      defaultStatus: "Completed",
-      delayClass: "delay-phase-1"
+      defaultStatus: "Completed"
     });
 
-    // Render Phase 2
+    // Phase 2: Design, Catering & Sensory
     renderPhaseSection({
       phaseNumber: "Phase 02 (Current Focus)",
       title: "Design, Catering & Sensory",
@@ -666,44 +637,40 @@
       tasks: phase2Tasks,
       isCompleted: false,
       defaultStatus: "Active",
-      delayClass: "delay-phase-2",
       showAiOptimization: true
     });
 
-    // Render Phase 3
+    // Phase 3: Logistics, AV & Transport
     renderPhaseSection({
       phaseNumber: "Phase 03 (Upcoming)",
       title: "Logistics, AV & Transport",
-      subtitle: "Scheduled Prep & Technical Runs",
+      subtitle: "Scheduled Prep & Soundcheck",
       icon: "commute",
       tasks: phase3Tasks,
       isCompleted: false,
-      defaultStatus: "Scheduled",
-      delayClass: "delay-phase-3"
+      defaultStatus: "Scheduled"
     });
 
-    // Render Run of Show preview drawer
     renderRunOfShow();
   }
 
   function renderPhaseSection(phaseData) {
     const sec = document.createElement('section');
-    sec.className = `anim-fade-up ${phaseData.delayClass} flex flex-col gap-space-md`;
+    sec.className = "flex flex-col gap-4";
 
-    // Phase completion calculation
     const total = phaseData.tasks.length;
     const completed = phaseData.tasks.filter(t => t.is_completed).length;
     const pct = total > 0 ? Math.round((completed / total) * 100) : (phaseData.defaultStatus === 'Completed' ? 100 : (phaseData.defaultStatus === 'Active' ? 75 : 20));
 
-    // Phase Header Well
+    // Phase Header Well (Terra Tonal Layering)
     const headerWell = document.createElement('div');
-    headerWell.className = "p-space-md rounded-DEFAULT bg-surface shadow-[inset_4px_4px_8px_rgba(190,182,170,0.45),inset_-4px_-4px_8px_rgba(255,255,255,0.95)] flex items-center justify-between border border-outline-variant/20";
+    headerWell.className = "p-4.5 rounded-[12px] bg-surface-container-low border border-outline-variant/30 flex items-center justify-between shadow-terra-subtle";
 
     const left = document.createElement('div');
-    left.className = "flex items-center gap-space-md";
+    left.className = "flex items-center gap-3.5";
 
     const iconCircle = document.createElement('div');
-    iconCircle.className = "w-10 h-10 rounded-full bg-surface flex items-center justify-center shadow-[3px_3px_8px_rgba(190,182,170,0.4),-3px_-3px_8px_rgba(255,255,255,0.9)] text-primary";
+    iconCircle.className = "w-10 h-10 rounded-[10px] bg-surface-container-high flex items-center justify-center border border-outline-variant/30 text-primary";
     const iconSpan = document.createElement('span');
     iconSpan.className = "material-symbols-outlined text-xl";
     iconSpan.textContent = phaseData.icon;
@@ -712,7 +679,7 @@
 
     const titleGroup = document.createElement('div');
     const titleRow = document.createElement('div');
-    titleRow.className = "flex items-center gap-space-xs";
+    titleRow.className = "flex items-center gap-2";
     
     const phaseNum = document.createElement('span');
     phaseNum.className = "text-xs uppercase font-bold text-primary";
@@ -720,7 +687,7 @@
     titleRow.appendChild(phaseNum);
 
     const dot = document.createElement('span');
-    dot.className = "text-on-surface-variant";
+    dot.className = "text-outline-variant";
     dot.textContent = "•";
     titleRow.appendChild(dot);
 
@@ -732,7 +699,7 @@
     titleGroup.appendChild(titleRow);
 
     const sub = document.createElement('p');
-    sub.className = "text-xs text-on-surface-variant";
+    sub.className = "text-xs text-on-surface-variant leading-tight";
     sub.textContent = phaseData.subtitle;
     titleGroup.appendChild(sub);
 
@@ -741,15 +708,15 @@
 
     // Progress pill & bar
     const right = document.createElement('div');
-    right.className = "flex items-center gap-space-sm";
+    right.className = "flex items-center gap-3";
 
     const pctSpan = document.createElement('span');
-    pctSpan.className = "text-xs text-primary font-semibold";
+    pctSpan.className = "text-xs text-primary font-bold";
     pctSpan.textContent = `${pct}% ${pct === 100 ? 'Completed' : (phaseData.defaultStatus === 'Active' ? 'Active' : 'Scheduled')}`;
     right.appendChild(pctSpan);
 
     const barOuter = document.createElement('div');
-    barOuter.className = "w-20 h-2 rounded-full bg-surface shadow-[inset_2px_2px_4px_rgba(190,182,170,0.4)] overflow-hidden";
+    barOuter.className = "w-24 h-2 rounded-full bg-surface-container overflow-hidden";
     const barInner = document.createElement('div');
     barInner.className = "h-full bg-primary rounded-full transition-all duration-300";
     barInner.style.width = `${pct}%`;
@@ -759,40 +726,40 @@
     headerWell.appendChild(right);
     sec.appendChild(headerWell);
 
-    // Render Cards in this phase
+    // Cards Container
     const cardsContainer = document.createElement('div');
-    cardsContainer.className = "flex flex-col gap-space-md";
+    cardsContainer.className = "flex flex-col gap-4";
 
     if (phaseData.tasks.length === 0) {
       const emptyCard = document.createElement('div');
-      emptyCard.className = "p-space-md rounded-DEFAULT bg-surface shadow-[4px_4px_10px_rgba(190,182,170,0.35),-4px_-4px_10px_rgba(255,255,255,0.9)] text-xs text-on-surface-variant text-center border border-outline-variant/30";
+      emptyCard.className = "terra-card bg-surface-container-low p-5 text-xs text-on-surface-variant text-center";
       emptyCard.textContent = "No tasks currently assigned to this phase.";
       cardsContainer.appendChild(emptyCard);
     } else {
       phaseData.tasks.forEach((task, idx) => {
-        const card = createTactileTaskCard(task, phaseData);
+        const card = createTerraTaskCard(task);
         cardsContainer.appendChild(card);
 
-        // Inject the AI Cost-Optimization Callout well after task 1 of Phase 2 (exact match to Stitch UI)
+        // Inject the AI Cost-Optimization Callout well after task 1 of Phase 2
         if (phaseData.showAiOptimization && idx === 1) {
           const aiSwapWell = document.createElement('div');
-          aiSwapWell.className = "p-space-sm px-space-md rounded-DEFAULT bg-surface shadow-[inset_3px_3px_6px_rgba(190,182,170,0.4),inset_-3px_-3px_6px_rgba(255,255,255,0.9)] flex items-center justify-between gap-space-sm border border-outline-variant/20 -mt-2 mb-2";
+          aiSwapWell.className = "p-3.5 px-4.5 rounded-[12px] bg-surface-container border border-outline-variant/35 flex items-center justify-between gap-3 shadow-terra-subtle -mt-1 mb-1";
 
           const tipLeft = document.createElement('div');
-          tipLeft.className = "flex items-center gap-space-sm";
+          tipLeft.className = "flex items-center gap-3";
           const tipIcon = document.createElement('span');
-          tipIcon.className = "material-symbols-outlined text-primary text-base";
+          tipIcon.className = "material-symbols-outlined text-primary text-lg";
           tipIcon.textContent = "savings";
           tipLeft.appendChild(tipIcon);
 
           const tipText = document.createElement('span');
-          tipText.className = "text-xs text-on-surface font-medium";
-          tipText.textContent = "AI Suggestion: Seasonal floral swap (Lisianthus & Marigold cascade) saves ~₹28,000 ($650) with identical volume.";
+          tipText.className = "text-xs text-on-surface font-medium leading-relaxed";
+          tipText.textContent = "AI Suggestion: Seasonal organic bloom swap (Lisianthus & Olive branch cascade) saves ~₹28,000 ($650) with identical volume.";
           tipLeft.appendChild(tipText);
           aiSwapWell.appendChild(tipLeft);
 
           const btnSwap = document.createElement('button');
-          btnSwap.className = "px-space-sm py-1 rounded-full bg-primary-fixed text-on-primary-fixed text-[11px] font-bold hover:bg-primary-fixed-dim transition-colors shrink-0 border border-primary/20 interactive-btn";
+          btnSwap.className = "terra-btn-primary py-1 px-3.5 text-xs shrink-0";
           btnSwap.textContent = "Apply Swap";
           btnSwap.addEventListener('click', () => {
             btnSwap.textContent = "Applied ✓";
@@ -810,21 +777,21 @@
     elements.phasesContainer.appendChild(sec);
   }
 
-  function createTactileTaskCard(task, phaseData) {
+  function createTerraTaskCard(task) {
     const card = document.createElement('div');
-    card.className = "interactive-card p-space-md lg:p-space-lg rounded-DEFAULT bg-surface shadow-[8px_8px_18px_rgba(190,182,170,0.45),-8px_-8px_18px_rgba(255,255,255,0.95)] flex flex-col md:flex-row md:items-center justify-between gap-space-md border border-outline-variant/30";
+    card.className = "terra-card bg-surface-container-low p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 border border-outline-variant/30 shadow-terra-soft";
 
     const left = document.createElement('div');
-    left.className = "flex items-start gap-space-md flex-1";
+    left.className = "flex items-start gap-4 flex-1";
 
-    // Tactile Checkbox Button
+    // Rounded Organic Checkbox Button
     const checkBtn = document.createElement('button');
     checkBtn.type = "button";
-    checkBtn.className = "mt-1 w-6 h-6 rounded-md bg-surface shadow-[inset_2px_2px_4px_rgba(190,182,170,0.4),inset_-2px_-2px_4px_rgba(255,255,255,0.9)] flex items-center justify-center text-primary border border-outline-variant/30 interactive-btn shrink-0";
-    checkBtn.title = "Toggle Task Completion";
+    checkBtn.className = "mt-0.5 w-6 h-6 rounded-[8px] bg-surface border border-outline-variant/40 flex items-center justify-center text-primary hover:border-primary transition-all shrink-0";
+    checkBtn.title = "Toggle Milestone Completion";
     
     const checkIcon = document.createElement('span');
-    checkIcon.className = `material-symbols-outlined text-sm font-bold ${task.is_completed ? 'opacity-100 text-primary' : 'opacity-0 hover:opacity-50'}`;
+    checkIcon.className = `material-symbols-outlined text-sm font-bold ${task.is_completed ? 'opacity-100 text-primary' : 'opacity-0 hover:opacity-40'}`;
     checkIcon.textContent = "check";
     checkBtn.appendChild(checkIcon);
 
@@ -838,23 +805,23 @@
     body.className = "flex flex-col gap-1 flex-1";
 
     const titleRow = document.createElement('div');
-    titleRow.className = "flex items-center gap-space-xs flex-wrap";
+    titleRow.className = "flex items-center gap-2 flex-wrap";
 
     const title = document.createElement('span');
-    title.className = `font-headline text-sm lg:text-base font-bold text-on-surface ${task.is_completed ? 'line-through opacity-70' : ''}`;
+    title.className = `font-headline text-base font-bold text-on-surface ${task.is_completed ? 'line-through opacity-60' : ''}`;
     title.textContent = task.title;
     titleRow.appendChild(title);
 
     if (task.category) {
       const catTag = document.createElement('span');
-      catTag.className = "px-space-xs py-0.5 rounded-full bg-surface shadow-[2px_2px_5px_rgba(190,182,170,0.3),-2px_-2px_5px_rgba(255,255,255,0.8)] text-on-surface-variant text-[11px] border border-outline-variant/30";
+      catTag.className = "px-2.5 py-0.5 rounded-full bg-surface-container text-on-surface-variant text-[11px] font-semibold border border-outline-variant/30";
       catTag.textContent = task.category;
       titleRow.appendChild(catTag);
     }
 
     if (task.priority === 'high') {
       const prioTag = document.createElement('span');
-      prioTag.className = "px-space-xs py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-container text-[11px] font-bold border border-tertiary/20";
+      prioTag.className = "px-2.5 py-0.5 rounded-full bg-tertiary/15 text-tertiary text-[11px] font-bold border border-tertiary/25";
       prioTag.textContent = "High Priority";
       titleRow.appendChild(prioTag);
     }
@@ -863,13 +830,13 @@
 
     if (task.description) {
       const desc = document.createElement('p');
-      desc.className = "text-xs text-on-surface-variant";
+      desc.className = "text-xs text-on-surface-variant leading-relaxed";
       desc.textContent = task.description;
       body.appendChild(desc);
     }
 
     const metaRow = document.createElement('div');
-    metaRow.className = "flex items-center gap-space-md text-on-surface-variant text-xs mt-1";
+    metaRow.className = "flex items-center gap-3 text-on-surface-variant text-xs mt-1";
 
     const dueSpan = document.createElement('span');
     dueSpan.className = `flex items-center gap-1 font-semibold ${task.is_overdue ? 'text-error' : 'text-on-surface'}`;
@@ -886,7 +853,7 @@
     metaRow.appendChild(bullet);
 
     const statusText = document.createElement('span');
-    statusText.textContent = task.is_completed ? "Completed & Cleared" : (task.is_overdue ? "Bottleneck Pending" : "In Progress");
+    statusText.textContent = task.is_completed ? "Completed & Cleared" : (task.is_overdue ? "Bottleneck Flagged" : "Active Flow");
     metaRow.appendChild(statusText);
 
     body.appendChild(metaRow);
@@ -895,10 +862,10 @@
 
     // Right Action Buttons
     const right = document.createElement('div');
-    right.className = "flex items-center gap-space-sm self-end md:self-center shrink-0";
+    right.className = "flex items-center gap-2.5 self-end md:self-center shrink-0";
 
     const btnAction = document.createElement('button');
-    btnAction.className = "px-space-md py-space-xs rounded-full bg-surface text-on-surface text-xs shadow-[4px_4px_10px_rgba(190,182,170,0.45),-4px_-4px_10px_rgba(255,255,255,0.9)] hover:text-primary active:shadow-[inset_2px_2px_5px_rgba(190,182,170,0.45)] transition-all border border-outline-variant/30 font-medium interactive-btn";
+    btnAction.className = "terra-btn-secondary text-xs py-1.5 px-3.5";
     btnAction.textContent = task.is_completed ? "Review Record" : "View Details";
     btnAction.addEventListener('click', () => {
       showToast(`Milestone Details: "${task.title}" due on ${task.due_date}.`, 'info');
@@ -906,7 +873,7 @@
     right.appendChild(btnAction);
 
     const btnDel = document.createElement('button');
-    btnDel.className = "w-8 h-8 rounded-full bg-surface flex items-center justify-center text-on-surface-variant shadow-[4px_4px_10px_rgba(190,182,170,0.45),-4px_-4px_10px_rgba(255,255,255,0.9)] hover:text-error border border-outline-variant/30 interactive-btn";
+    btnDel.className = "w-8 h-8 rounded-[10px] bg-surface hover:bg-error-container text-on-surface-variant hover:text-error flex items-center justify-center border border-outline-variant/30 transition-colors";
     btnDel.title = "Delete Milestone";
     const delIcon = document.createElement('span');
     delIcon.className = "material-symbols-outlined text-sm";
@@ -927,7 +894,6 @@
     const items = state.currentEvent.run_of_show || [];
     elements.runOfShowTrack.replaceChildren();
 
-    // Event date for run-of-show
     if (elements.rosDateDisplay) {
       const d = new Date(state.currentEvent.event.event_date);
       const formatted = isNaN(d) ? state.currentEvent.event.event_date : d.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' });
@@ -935,17 +901,16 @@
     }
 
     if (elements.widgetWeatherText) {
-      elements.widgetWeatherText.textContent = `${state.currentEvent.event.location} • Historic avg 22°C • 5% Rain Risk`;
+      elements.widgetWeatherText.textContent = `${state.currentEvent.event.location} • Historic avg 21°C • 5% Rain Risk`;
     }
 
-    // Timeline Vertical Line Accent
     const vLine = document.createElement('div');
-    vLine.className = "absolute left-7 top-4 bottom-4 w-0.5 bg-outline-variant/60";
+    vLine.className = "absolute left-7 top-4 bottom-4 w-0.5 bg-outline-variant/40";
     elements.runOfShowTrack.appendChild(vLine);
 
     if (items.length === 0) {
       const empty = document.createElement('div');
-      empty.className = "text-xs text-on-surface-variant p-space-sm text-center";
+      empty.className = "text-xs text-on-surface-variant p-3 text-center";
       empty.textContent = "Micro-schedule will synchronize on event creation.";
       elements.runOfShowTrack.appendChild(empty);
       return;
@@ -953,17 +918,17 @@
 
     items.forEach(item => {
       const row = document.createElement('div');
-      row.className = "flex items-start gap-space-md relative z-10 interactive-btn";
+      row.className = "flex items-start gap-3.5 relative z-10 transition-all hover:translate-x-0.5";
 
       const dotCircle = document.createElement('div');
       if (item.is_key) {
-        dotCircle.className = "w-6 h-6 rounded-full bg-primary-fixed shadow-[2px_2px_5px_rgba(74,124,89,0.3)] flex items-center justify-center shrink-0 mt-0.5 border border-primary/20";
+        dotCircle.className = "w-6 h-6 rounded-[8px] bg-tertiary/15 border border-tertiary/25 flex items-center justify-center shrink-0 mt-0.5 text-tertiary";
         const star = document.createElement('span');
-        star.className = "material-symbols-outlined text-xs text-primary font-bold";
+        star.className = "material-symbols-outlined text-xs font-bold";
         star.textContent = "favorite";
         dotCircle.appendChild(star);
       } else {
-        dotCircle.className = "w-6 h-6 rounded-full bg-surface shadow-[2px_2px_5px_rgba(190,182,170,0.4),-2px_-2px_5px_rgba(255,255,255,0.9)] flex items-center justify-center shrink-0 mt-0.5 border border-outline-variant/30";
+        dotCircle.className = "w-6 h-6 rounded-[8px] bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0 mt-0.5 text-primary";
         const innerDot = document.createElement('span');
         innerDot.className = "w-2 h-2 rounded-full bg-primary";
         dotCircle.appendChild(innerDot);
@@ -989,7 +954,7 @@
       body.appendChild(topRow);
 
       const title = document.createElement('span');
-      title.className = "text-xs text-on-surface font-semibold";
+      title.className = "text-xs text-on-surface font-bold";
       title.textContent = item.title;
       body.appendChild(title);
 
@@ -1026,7 +991,6 @@
       elements.metricReserveNotice.textContent = `Unallocated reserve: ${formatMoney(summary.unallocated_reserve, currency)}`;
     }
 
-    // Progress bar
     if (elements.budgetProgressFill) {
       const utilPct = Math.min(100, Math.max(0, summary.utilization_pct));
       elements.budgetProgressFill.style.width = `${utilPct}%`;
@@ -1035,7 +999,6 @@
       elements.progressPctText.textContent = `${summary.actual_utilization_pct}% spent of total ceiling`;
     }
 
-    // Warnings
     if (elements.budgetWarningsContainer) {
       elements.budgetWarningsContainer.replaceChildren();
       if (summary.warnings && summary.warnings.length > 0) {
@@ -1056,41 +1019,36 @@
       }
     }
 
-    // Budget Table Rows
     if (elements.budgetTableBody) {
       elements.budgetTableBody.replaceChildren();
       items.forEach(item => {
         const tr = document.createElement('tr');
-        tr.className = "hover:bg-surface-container-low transition-colors";
+        tr.className = "hover:bg-surface-container transition-colors";
 
-        // Category
         const tdCat = document.createElement('td');
-        tdCat.className = "py-space-sm px-space-md font-bold text-on-surface";
+        tdCat.className = "py-3 px-4 font-bold text-on-surface";
         tdCat.textContent = item.category;
         tr.appendChild(tdCat);
 
-        // Priority
         const tdPriority = document.createElement('td');
-        tdPriority.className = "py-space-sm px-space-md";
+        tdPriority.className = "py-3 px-4";
         const tag = document.createElement('span');
-        tag.className = `px-space-xs py-0.5 rounded-full text-[11px] font-semibold ${item.priority === 'essential' ? 'bg-primary-fixed text-on-primary-fixed-variant' : 'bg-surface-container-high text-on-surface-variant'}`;
+        tag.className = `px-2.5 py-0.5 rounded-full text-[11px] font-bold ${item.priority === 'essential' ? 'bg-primary/10 text-primary border border-primary/20' : 'bg-surface-container-high text-on-surface-variant'}`;
         tag.textContent = item.priority || 'essential';
         tdPriority.appendChild(tag);
         tr.appendChild(tdPriority);
 
-        // Estimated
         const tdEst = document.createElement('td');
-        tdEst.className = "py-space-sm px-space-md font-semibold text-on-surface";
+        tdEst.className = "py-3 px-4 font-semibold text-on-surface";
         tdEst.textContent = formatMoney(item.estimated_amount, currency);
         tr.appendChild(tdEst);
 
-        // Actual Spent (Inline editable input with tactile well)
         const tdAct = document.createElement('td');
-        tdAct.className = "py-space-sm px-space-md";
+        tdAct.className = "py-3 px-4";
         const actInput = document.createElement('input');
         actInput.type = "number";
         actInput.min = "0";
-        actInput.className = "w-28 px-space-sm py-1 rounded-DEFAULT bg-surface text-on-surface text-xs shadow-[inset_2px_2px_4px_rgba(190,182,170,0.4)] border border-outline-variant/30 focus:outline-none focus:ring-1 focus:ring-primary";
+        actInput.className = "terra-input w-28 py-1 px-2.5 text-xs font-semibold";
         actInput.value = item.actual_amount;
         actInput.setAttribute('aria-label', `Actual spent for ${item.category}`);
         actInput.addEventListener('change', async (e) => {
@@ -1099,17 +1057,15 @@
         tdAct.appendChild(actInput);
         tr.appendChild(tdAct);
 
-        // Notes
         const tdNotes = document.createElement('td');
-        tdNotes.className = "py-space-sm px-space-md text-on-surface-variant text-xs";
+        tdNotes.className = "py-3 px-4 text-on-surface-variant text-xs";
         tdNotes.textContent = item.notes || '—';
         tr.appendChild(tdNotes);
 
-        // Actions (Delete)
         const tdActions = document.createElement('td');
-        tdActions.className = "py-space-sm px-space-md text-center";
+        tdActions.className = "py-3 px-4 text-center";
         const btnDel = document.createElement('button');
-        btnDel.className = "w-7 h-7 rounded-full bg-surface text-on-surface-variant hover:text-error shadow-[2px_2px_5px_rgba(190,182,170,0.3)] inline-flex items-center justify-center font-bold text-xs interactive-btn";
+        btnDel.className = "w-7 h-7 rounded-[8px] bg-surface hover:bg-error-container text-on-surface-variant hover:text-error inline-flex items-center justify-center font-bold text-xs transition-colors border border-outline-variant/30";
         btnDel.textContent = "✕";
         btnDel.title = `Delete ${item.category}`;
         btnDel.addEventListener('click', () => {
@@ -1131,7 +1087,7 @@
 
     if (vendors.length === 0) {
       const emptyDiv = document.createElement('div');
-      emptyDiv.className = "col-span-full p-space-xl text-center text-xs text-on-surface-variant";
+      emptyDiv.className = "col-span-full p-8 text-center text-xs text-on-surface-variant";
       emptyDiv.textContent = 'No vendor items added yet. Click "+ Add Vendor" to add one.';
       elements.vendorGrid.appendChild(emptyDiv);
       return;
@@ -1139,18 +1095,18 @@
 
     vendors.forEach(v => {
       const card = document.createElement('div');
-      card.className = "interactive-card p-space-md rounded-DEFAULT bg-surface shadow-[4px_4px_10px_rgba(190,182,170,0.35),-4px_-4px_10px_rgba(255,255,255,0.9)] flex flex-col justify-between border border-outline-variant/30 gap-space-sm";
+      card.className = "terra-card bg-surface-container-low p-6 flex flex-col justify-between border border-outline-variant/30 gap-3 shadow-terra-soft";
 
       const top = document.createElement('div');
       top.className = "flex items-start justify-between";
 
       const catBadge = document.createElement('span');
-      catBadge.className = "px-space-xs py-0.5 rounded-full bg-secondary-container text-on-secondary-container text-[11px] font-semibold border border-secondary/20";
+      catBadge.className = "px-2.5 py-0.5 rounded-full bg-tertiary/15 text-tertiary text-[11px] font-bold border border-tertiary/25";
       catBadge.textContent = v.category;
       top.appendChild(catBadge);
 
       const btnDel = document.createElement('button');
-      btnDel.className = "text-on-surface-variant hover:text-error text-xs font-bold";
+      btnDel.className = "w-7 h-7 rounded-[8px] bg-surface text-on-surface-variant hover:text-error hover:bg-error-container flex items-center justify-center text-xs font-bold transition-colors";
       btnDel.textContent = "✕";
       btnDel.title = "Delete Vendor";
       btnDel.addEventListener('click', () => {
@@ -1167,25 +1123,24 @@
 
       if (v.description) {
         const desc = document.createElement('p');
-        desc.className = "text-xs text-on-surface-variant mt-0.5";
+        desc.className = "text-xs text-on-surface-variant mt-1 leading-relaxed";
         desc.textContent = v.description;
         mid.appendChild(desc);
       }
 
       if (v.notes) {
         const notesWell = document.createElement('div');
-        notesWell.className = "mt-2 p-space-xs rounded-DEFAULT bg-surface shadow-[inset_2px_2px_4px_rgba(190,182,170,0.3)] text-[11px] text-on-surface-variant";
-        notesWell.textContent = `Criteria / Notes: ${v.notes}`;
+        notesWell.className = "mt-2.5 p-2 px-3 rounded-[8px] bg-surface border border-outline-variant/30 text-[11px] text-on-surface-variant";
+        notesWell.textContent = `Criteria: ${v.notes}`;
         mid.appendChild(notesWell);
       }
       card.appendChild(mid);
 
-      // Status selector
       const bot = document.createElement('div');
-      bot.className = "flex items-center justify-between pt-space-xs border-t border-outline-variant/20";
+      bot.className = "flex items-center justify-between pt-3 border-t border-outline-variant/30";
 
       const statusSelect = document.createElement('select');
-      statusSelect.className = "px-space-sm py-1 rounded-full bg-surface text-on-surface text-xs shadow-[inset_2px_2px_4px_rgba(190,182,170,0.4)] border border-outline-variant/20 font-semibold";
+      statusSelect.className = "terra-input text-xs py-1 px-3";
       const statuses = [
         { val: 'not_contacted', text: 'Not Contacted' },
         { val: 'in_discussion', text: 'In Discussion' },
@@ -1218,7 +1173,7 @@
 
     if (ideas.length === 0) {
       const emptyDiv = document.createElement('div');
-      emptyDiv.className = "col-span-full p-space-xl text-center text-xs text-on-surface-variant";
+      emptyDiv.className = "col-span-full p-8 text-center text-xs text-on-surface-variant";
       emptyDiv.textContent = 'No personalized recommendations found for this plan.';
       elements.ideasGrid.appendChild(emptyDiv);
       return;
@@ -1226,11 +1181,11 @@
 
     ideas.forEach(idea => {
       const card = document.createElement('div');
-      card.className = "interactive-card p-space-md lg:p-space-lg rounded-DEFAULT bg-surface shadow-[4px_4px_10px_rgba(190,182,170,0.35),-4px_-4px_10px_rgba(255,255,255,0.9)] flex flex-col justify-between border border-outline-variant/30 gap-space-sm";
+      card.className = "terra-card bg-surface-container-low p-6 flex flex-col justify-between border border-outline-variant/30 gap-3 shadow-terra-soft";
 
       const top = document.createElement('div');
       const badge = document.createElement('span');
-      badge.className = "px-space-xs py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed-variant text-[11px] font-bold border border-primary/20";
+      badge.className = "px-2.5 py-0.5 rounded-full bg-primary/10 text-primary text-[11px] font-bold border border-primary/20 w-fit";
       badge.textContent = (idea.category || 'Concept').toUpperCase();
       top.appendChild(badge);
       card.appendChild(top);
@@ -1242,14 +1197,14 @@
       mid.appendChild(title);
 
       const desc = document.createElement('p');
-      desc.className = "text-xs text-on-surface-variant mt-1 leading-relaxed";
+      desc.className = "text-xs text-on-surface-variant mt-1.5 leading-relaxed";
       desc.textContent = idea.description;
       mid.appendChild(desc);
 
       if (idea.rationale) {
         const rat = document.createElement('div');
-        rat.className = "mt-2 p-space-xs px-space-sm rounded-DEFAULT bg-surface shadow-[inset_2px_2px_4px_rgba(190,182,170,0.3)] text-[11px] text-primary font-medium";
-        rat.textContent = `★ Why it fits: ${idea.rationale}`;
+        rat.className = "mt-3 p-2.5 px-3 rounded-[8px] bg-surface border border-outline-variant/30 text-xs text-primary font-medium leading-relaxed";
+        rat.textContent = `★ Why it suits your event: ${idea.rationale}`;
         mid.appendChild(rat);
       }
       card.appendChild(mid);
@@ -1258,7 +1213,7 @@
     });
   }
 
-  // --- Render Overview & Hub Section ---
+  // --- Render Overview Section ---
   function renderOverview() {
     if (!state.currentEvent) return;
     const ev = state.currentEvent.event;
@@ -1294,7 +1249,6 @@
     const accessibility = document.getElementById('eventAccessibility').value.trim();
     const notes = document.getElementById('eventNotes').value.trim();
 
-    // Validation
     const errors = {};
     if (!name) errors.name = 'Please enter an event name.';
     if (!eventDate) errors.event_date = 'Please select a valid event date.';
@@ -1323,9 +1277,8 @@
       notes
     };
 
-    // UI Loading state
     if (elements.btnGeneratePlan) elements.btnGeneratePlan.disabled = true;
-    if (elements.btnGenText) elements.btnGenText.textContent = "Synthesizing Intelligent Blueprint...";
+    if (elements.btnGenText) elements.btnGenText.textContent = "Synthesizing Terra Blueprint...";
     if (elements.btnGenSpinner) elements.btnGenSpinner.classList.remove('hidden');
 
     try {
@@ -1351,7 +1304,7 @@
       showToast(err.message || 'Failed to generate event blueprint.', 'error');
     } finally {
       if (elements.btnGeneratePlan) elements.btnGeneratePlan.disabled = false;
-      if (elements.btnGenText) elements.btnGenText.textContent = "Generate Intelligent Event Blueprint";
+      if (elements.btnGenText) elements.btnGenText.textContent = "Generate Terra Event Blueprint";
       if (elements.btnGenSpinner) elements.btnGenSpinner.classList.add('hidden');
     }
   }
@@ -1578,7 +1531,7 @@
     } else {
       state.savedEvents.forEach(ev => {
         const item = document.createElement('div');
-        item.className = "p-space-md rounded-DEFAULT bg-surface shadow-[4px_4px_10px_rgba(190,182,170,0.35),-4px_-4px_10px_rgba(255,255,255,0.9)] flex items-center justify-between border border-outline-variant/30";
+        item.className = "terra-card bg-surface-container-low p-4.5 flex items-center justify-between border border-outline-variant/30 shadow-terra-subtle";
 
         const left = document.createElement('div');
         const title = document.createElement('h4');
@@ -1593,10 +1546,10 @@
         item.appendChild(left);
 
         const actions = document.createElement('div');
-        actions.className = "flex items-center gap-space-xs";
+        actions.className = "flex items-center gap-2";
 
         const btnOpen = document.createElement('button');
-        btnOpen.className = "px-space-md py-1 rounded-full bg-primary text-on-primary text-xs font-semibold shadow-[2px_4px_8px_rgba(74,124,89,0.3)] interactive-btn";
+        btnOpen.className = "terra-btn-primary py-1 px-3.5 text-xs";
         btnOpen.textContent = "Open";
         btnOpen.addEventListener('click', async () => {
           elements.modalSavedEvents.classList.remove('active');
@@ -1605,7 +1558,7 @@
         actions.appendChild(btnOpen);
 
         const btnDel = document.createElement('button');
-        btnDel.className = "w-7 h-7 rounded-full bg-surface text-on-surface-variant hover:text-error text-xs font-bold shadow-[2px_2px_5px_rgba(190,182,170,0.3)] interactive-btn";
+        btnDel.className = "w-7 h-7 rounded-[8px] bg-surface hover:bg-error-container text-on-surface-variant hover:text-error text-xs font-bold transition-colors border border-outline-variant/30 flex items-center justify-center";
         btnDel.textContent = "✕";
         btnDel.title = "Delete Event";
         btnDel.addEventListener('click', () => {

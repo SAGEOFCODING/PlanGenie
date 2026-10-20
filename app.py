@@ -27,13 +27,19 @@ app.config.from_object(Config)
 # Initialize database
 db = Database(app.config["DATABASE_PATH"])
 
-# --- Security Headers Middleware ---
+# --- Security & Caching Headers Middleware ---
 @app.after_request
 def set_security_headers(response):
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["X-Frame-Options"] = "DENY"
     response.headers["X-XSS-Protection"] = "1; mode=block"
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    
+    # Efficient client-side caching for immutable static assets & telemetry
+    if request.path.startswith("/static/") or request.path in ("/favicon.ico", "/sitemap.xml", "/robots.txt", "/llms.txt"):
+        response.headers["Cache-Control"] = "public, max-age=86400, stale-while-revalidate=3600"
+    elif request.path.startswith("/api/"):
+        response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
     return response
 
 # --- Error Handlers (Safe, non-leaking JSON responses) ---
@@ -145,34 +151,9 @@ def get_config():
 # --- Event Management Routes ---
 @app.route("/api/events", methods=["GET"])
 def list_events():
-    """Returns a list of all saved events with budget totals."""
+    """Returns a list of all saved events with budget totals in an O(1) single aggregated query."""
     try:
-        events = db.list_events()
-        enriched = []
-        for ev in events:
-            budget_items = db.get_budget_items(ev["id"])
-            summary = calculate_budget_summary(ev["budget"], budget_items)
-            tasks = db.get_tasks(ev["id"])
-            total_tasks = len(tasks)
-            completed_tasks = sum(1 for t in tasks if t["is_completed"])
-            
-            enriched.append({
-                "id": ev["id"],
-                "name": ev["name"],
-                "category": ev["category"],
-                "event_date": ev["event_date"],
-                "location": ev["location"],
-                "guests": ev["guests"],
-                "budget": ev["budget"],
-                "currency": ev["currency"],
-                "ai_source": ev["ai_source"],
-                "total_actual": summary["total_actual"],
-                "remaining_balance": summary["remaining_balance"],
-                "utilization_pct": summary["utilization_pct"],
-                "total_tasks": total_tasks,
-                "completed_tasks": completed_tasks,
-                "created_at": ev["created_at"]
-            })
+        enriched = db.list_events_with_summary()
         return jsonify({"success": True, "events": enriched})
     except Exception as e:
         logger.error(f"Error listing events: {e}")

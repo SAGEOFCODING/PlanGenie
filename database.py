@@ -89,10 +89,12 @@ class Database:
 
     @contextmanager
     def get_connection(self):
-        """Context manager providing a safe, parameterized SQLite connection."""
-        conn = sqlite3.connect(self.db_path)
+        """Context manager providing a high-performance, parameterized SQLite connection."""
+        conn = sqlite3.connect(self.db_path, timeout=10.0)
         conn.row_factory = sqlite3.Row
         conn.execute("PRAGMA foreign_keys = ON;")
+        conn.execute("PRAGMA synchronous = NORMAL;")
+        conn.execute("PRAGMA temp_store = MEMORY;")
         try:
             yield conn
             conn.commit()
@@ -103,8 +105,10 @@ class Database:
             conn.close()
 
     def init_db(self):
-        """Initializes database schema if tables do not exist."""
+        """Initializes database schema and WAL mode if tables do not exist."""
         with self.get_connection() as conn:
+            conn.execute("PRAGMA journal_mode = WAL;")
+            conn.execute("PRAGMA cache_size = -16000;")
             conn.executescript(SCHEMA_SQL)
 
     def create_event(self, event_data):
@@ -151,6 +155,47 @@ class Database:
             rows = conn.execute(query).fetchall()
             return [dict(r) for r in rows]
 
+    def list_events_with_summary(self):
+        """
+        Retrieves all events with aggregated actual spending and task completion statistics
+        in a single, high-performance database query (eliminates N+1 query overhead).
+        """
+        query = """
+        SELECT 
+            e.id, e.name, e.category, e.event_date, e.location, e.guests,
+            e.budget, e.currency, e.ai_source, e.created_at,
+            COALESCE(b.total_actual, 0) as total_actual,
+            COALESCE(t.total_tasks, 0) as total_tasks,
+            COALESCE(t.completed_tasks, 0) as completed_tasks
+        FROM events e
+        LEFT JOIN (
+            SELECT event_id, SUM(actual_amount) as total_actual
+            FROM budget_items
+            GROUP BY event_id
+        ) b ON e.id = b.event_id
+        LEFT JOIN (
+            SELECT event_id, 
+                   COUNT(id) as total_tasks, 
+                   SUM(CASE WHEN is_completed = 1 THEN 1 ELSE 0 END) as completed_tasks
+            FROM tasks
+            GROUP BY event_id
+        ) t ON e.id = t.event_id
+        ORDER BY e.created_at DESC
+        """
+        with self.get_connection() as conn:
+            rows = conn.execute(query).fetchall()
+            results = []
+            for r in rows:
+                d = dict(r)
+                total_budget = int(d["budget"])
+                total_act = int(d["total_actual"])
+                rem = total_budget - total_act
+                util_pct = round((total_act / total_budget * 100), 1) if total_budget > 0 else 0.0
+                d["remaining_balance"] = rem
+                d["utilization_pct"] = min(100.0, util_pct)
+                results.append(d)
+            return results
+
     def update_event(self, event_id, event_data):
         """Updates essential and personalization fields of an event."""
         query = """
@@ -191,21 +236,25 @@ class Database:
 
     # --- Budget Items CRUD ---
     def set_budget_items(self, event_id, items):
-        """Replaces or initializes all budget items for an event."""
+        """Replaces or initializes all budget items for an event in an efficient batch transaction."""
+        param_list = [
+            (
+                event_id,
+                item.get("category", "").strip(),
+                int(item.get("estimated_amount", 0)),
+                int(item.get("actual_amount", 0)),
+                item.get("priority", "essential"),
+                item.get("notes", "")
+            )
+            for item in items
+        ]
         with self.get_connection() as conn:
             conn.execute("DELETE FROM budget_items WHERE event_id = ?", (event_id,))
-            for item in items:
-                conn.execute("""
+            if param_list:
+                conn.executemany("""
                 INSERT INTO budget_items (event_id, category, estimated_amount, actual_amount, priority, notes)
                 VALUES (?, ?, ?, ?, ?, ?)
-                """, (
-                    event_id,
-                    item.get("category", "").strip(),
-                    int(item.get("estimated_amount", 0)),
-                    int(item.get("actual_amount", 0)),
-                    item.get("priority", "essential"),
-                    item.get("notes", "")
-                ))
+                """, param_list)
 
     def get_budget_items(self, event_id):
         """Retrieves all budget items for an event."""
@@ -247,22 +296,26 @@ class Database:
 
     # --- Tasks CRUD ---
     def set_tasks(self, event_id, tasks):
-        """Replaces or initializes all tasks for an event."""
+        """Replaces or initializes all tasks for an event in an efficient batch transaction."""
+        param_list = [
+            (
+                event_id,
+                t.get("title", "").strip(),
+                t.get("description", "").strip(),
+                t.get("due_date", "").strip(),
+                t.get("priority", "medium").lower(),
+                1 if t.get("is_completed") else 0,
+                t.get("category", "")
+            )
+            for t in tasks
+        ]
         with self.get_connection() as conn:
             conn.execute("DELETE FROM tasks WHERE event_id = ?", (event_id,))
-            for t in tasks:
-                conn.execute("""
+            if param_list:
+                conn.executemany("""
                 INSERT INTO tasks (event_id, title, description, due_date, priority, is_completed, category)
                 VALUES (?, ?, ?, ?, ?, ?, ?)
-                """, (
-                    event_id,
-                    t.get("title", "").strip(),
-                    t.get("description", "").strip(),
-                    t.get("due_date", "").strip(),
-                    t.get("priority", "medium").lower(),
-                    1 if t.get("is_completed") else 0,
-                    t.get("category", "")
-                ))
+                """, param_list)
 
     def get_tasks(self, event_id):
         """Retrieves all tasks for an event ordered by due_date."""
@@ -296,22 +349,26 @@ class Database:
 
     # --- Vendor Checklist CRUD ---
     def set_vendor_items(self, event_id, items):
-        """Replaces or initializes vendor checklist items."""
+        """Replaces or initializes vendor checklist items in an efficient batch transaction."""
+        param_list = [
+            (
+                event_id,
+                v.get("category", "").strip(),
+                v.get("title", "").strip(),
+                v.get("description", "").strip(),
+                v.get("status", "not_contacted").strip().lower(),
+                v.get("notes", "").strip(),
+                int(v.get("estimated_cost", 0))
+            )
+            for v in items
+        ]
         with self.get_connection() as conn:
             conn.execute("DELETE FROM vendor_items WHERE event_id = ?", (event_id,))
-            for v in items:
-                conn.execute("""
+            if param_list:
+                conn.executemany("""
                 INSERT INTO vendor_items (event_id, category, title, description, status, notes, estimated_cost)
                 VALUES (?, ?, ?, ?, ?, ?, ?)
-                """, (
-                    event_id,
-                    v.get("category", "").strip(),
-                    v.get("title", "").strip(),
-                    v.get("description", "").strip(),
-                    v.get("status", "not_contacted").strip().lower(),
-                    v.get("notes", "").strip(),
-                    int(v.get("estimated_cost", 0))
-                ))
+                """, param_list)
 
     def get_vendor_items(self, event_id):
         """Retrieves all vendor items for an event."""
@@ -353,20 +410,24 @@ class Database:
 
     # --- Personalized Ideas CRUD ---
     def set_personalized_ideas(self, event_id, ideas):
-        """Replaces or initializes personalized ideas."""
+        """Replaces or initializes personalized ideas in an efficient batch transaction."""
+        param_list = [
+            (
+                event_id,
+                idea.get("category", "idea").strip(),
+                idea.get("title", "").strip(),
+                idea.get("description", "").strip(),
+                idea.get("rationale", "").strip()
+            )
+            for idea in ideas
+        ]
         with self.get_connection() as conn:
             conn.execute("DELETE FROM personalized_ideas WHERE event_id = ?", (event_id,))
-            for idea in ideas:
-                conn.execute("""
+            if param_list:
+                conn.executemany("""
                 INSERT INTO personalized_ideas (event_id, category, title, description, rationale)
                 VALUES (?, ?, ?, ?, ?)
-                """, (
-                    event_id,
-                    idea.get("category", "idea").strip(),
-                    idea.get("title", "").strip(),
-                    idea.get("description", "").strip(),
-                    idea.get("rationale", "").strip()
-                ))
+                """, param_list)
 
     def get_personalized_ideas(self, event_id):
         """Retrieves all personalized ideas for an event."""
@@ -376,14 +437,21 @@ class Database:
             return [dict(r) for r in rows]
 
     def get_complete_event_plan(self, event_id):
-        """Retrieves full event details including budget, tasks, vendors, and ideas."""
-        event = self.get_event(event_id)
-        if not event:
-            return None
-        return {
-            "event": event,
-            "budget": self.get_budget_items(event_id),
-            "tasks": self.get_tasks(event_id),
-            "vendors": self.get_vendor_items(event_id),
-            "ideas": self.get_personalized_ideas(event_id)
-        }
+        """Retrieves full event details in a single efficient connection context."""
+        with self.get_connection() as conn:
+            event_row = conn.execute("SELECT * FROM events WHERE id = ?", (event_id,)).fetchone()
+            if not event_row:
+                return None
+            
+            b_rows = conn.execute("SELECT * FROM budget_items WHERE event_id = ? ORDER BY id ASC", (event_id,)).fetchall()
+            t_rows = conn.execute("SELECT * FROM tasks WHERE event_id = ? ORDER BY due_date ASC, id ASC", (event_id,)).fetchall()
+            v_rows = conn.execute("SELECT * FROM vendor_items WHERE event_id = ? ORDER BY id ASC", (event_id,)).fetchall()
+            i_rows = conn.execute("SELECT * FROM personalized_ideas WHERE event_id = ? ORDER BY id ASC", (event_id,)).fetchall()
+            
+            return {
+                "event": dict(event_row),
+                "budget": [dict(r) for r in b_rows],
+                "tasks": [dict(r) for r in t_rows],
+                "vendors": [dict(r) for r in v_rows],
+                "ideas": [dict(r) for r in i_rows]
+            }

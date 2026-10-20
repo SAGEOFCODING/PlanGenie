@@ -112,5 +112,33 @@ class TestDatabase(unittest.TestCase):
         tasks = self.db.get_tasks(event_id)
         self.assertEqual(tasks[0]["is_completed"], 0)
 
+    def test_list_events_with_summary(self):
+        # Create two events
+        ev1 = self.db.create_event({"name": "Summit 2026", "category": "corporate", "event_date": "2026-11-10", "location": "Bengaluru", "guests": 500, "budget": 500000})
+        ev2 = self.db.create_event({"name": "Dinner Party", "category": "social", "event_date": "2026-11-12", "location": "Goa", "guests": 15, "budget": 40000})
+
+        # Add budget and tasks to ev1
+        self.db.add_budget_item(ev1, "Catering", 200000, 180000)
+        self.db.add_budget_item(ev1, "Venue", 150000, 150000)
+        t1 = self.db.add_task(ev1, "Sign NDA", "", "2026-11-01", priority="high")
+        t2 = self.db.add_task(ev1, "Send Invites", "", "2026-11-02", priority="medium")
+        self.db.update_task_status(t1, is_completed=True)
+
+        summaries = self.db.list_events_with_summary()
+        self.assertEqual(len(summaries), 2)
+
+        # Map by id
+        sum_map = {s["id"]: s for s in summaries}
+        self.assertEqual(sum_map[ev1]["total_actual"], 330000)
+        self.assertEqual(sum_map[ev1]["remaining_balance"], 170000)
+        self.assertEqual(sum_map[ev1]["total_tasks"], 2)
+        self.assertEqual(sum_map[ev1]["completed_tasks"], 1)
+
+        self.assertEqual(sum_map[ev2]["total_actual"], 0)
+        self.assertEqual(sum_map[ev2]["remaining_balance"], 40000)
+        self.assertEqual(sum_map[ev2]["total_tasks"], 0)
+        self.assertEqual(sum_map[ev2]["completed_tasks"], 0)
+
 if __name__ == "__main__":
     unittest.main()
+

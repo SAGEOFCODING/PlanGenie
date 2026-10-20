@@ -280,8 +280,20 @@ def validate_and_sanitize_ai_plan(parsed_data: Dict[str, Any], event_data: Dict[
         "ai_source": "live_genai"
     }
 
+# Module-level connection-pooled session for minimal TLS/TCP handshake overhead
+_session = None
+
+def get_session() -> requests.Session:
+    global _session
+    if _session is None:
+        _session = requests.Session()
+        adapter = requests.adapters.HTTPAdapter(pool_connections=5, pool_maxsize=10, max_retries=1)
+        _session.mount("https://", adapter)
+        _session.mount("http://", adapter)
+    return _session
+
 def call_gemini_api(prompt: str, api_key: str) -> str:
-    """Invokes Google Gemini REST API with bounded timeout."""
+    """Invokes Google Gemini REST API with bounded timeout using connection pooling."""
     url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
     payload = {
         "contents": [
@@ -299,7 +311,8 @@ def call_gemini_api(prompt: str, api_key: str) -> str:
         }
     }
     headers = {"Content-Type": "application/json"}
-    response = requests.post(url, json=payload, headers=headers, timeout=12)
+    session = get_session()
+    response = session.post(url, json=payload, headers=headers, timeout=12)
     response.raise_for_status()
     data = response.json()
     candidates = data.get("candidates", [])
@@ -311,7 +324,7 @@ def call_gemini_api(prompt: str, api_key: str) -> str:
     return parts[0]["text"]
 
 def call_openai_api(prompt: str, api_key: str) -> str:
-    """Invokes OpenAI Chat Completions API with JSON mode and bounded timeout."""
+    """Invokes OpenAI Chat Completions API with JSON mode and bounded timeout using connection pooling."""
     url = "https://api.openai.com/v1/chat/completions"
     payload = {
         "model": "gpt-4o-mini",
@@ -327,7 +340,8 @@ def call_openai_api(prompt: str, api_key: str) -> str:
         "Content-Type": "application/json",
         "Authorization": f"Bearer {api_key}"
     }
-    response = requests.post(url, json=payload, headers=headers, timeout=12)
+    session = get_session()
+    response = session.post(url, json=payload, headers=headers, timeout=12)
     response.raise_for_status()
     data = response.json()
     choices = data.get("choices", [])

@@ -37,6 +37,8 @@
     btnLogoHome: document.getElementById('btnLogoHome'),
     omniSearchInput: document.getElementById('omniSearchInput'),
     btnHeaderNewEvent: document.getElementById('btnHeaderNewEvent'),
+    btnThemeToggle: document.getElementById('btnThemeToggle'),
+    themeIcon: document.getElementById('themeIcon'),
     btnHeaderPrint: document.getElementById('btnHeaderPrint'),
     headerCurrentCat: document.getElementById('headerCurrentCat'),
 
@@ -294,8 +296,39 @@
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
+  // --- Theme Management (Rooted Warmth Dark Mode) ---
+  function updateThemeIcon() {
+    const isDark = document.documentElement.classList.contains('dark');
+    if (elements.themeIcon) {
+      elements.themeIcon.textContent = isDark ? 'light_mode' : 'dark_mode';
+    }
+    if (elements.btnThemeToggle) {
+      elements.btnThemeToggle.setAttribute(
+        'title',
+        isDark ? 'Switch to Warm Cream (Light Mode)' : 'Switch to Rooted Charcoal (Dark Mode)'
+      );
+      elements.btnThemeToggle.setAttribute(
+        'aria-label',
+        isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'
+      );
+    }
+  }
+
+  function toggleTheme() {
+    const isDark = document.documentElement.classList.toggle('dark');
+    try {
+      localStorage.setItem('plangenie_theme', isDark ? 'dark' : 'light');
+    } catch (e) {}
+    updateThemeIcon();
+    showToast(
+      isDark ? 'Terra Dark Mode active ("Rooted Warmth")' : 'Terra Light Mode active ("Warm Cream")',
+      'info'
+    );
+  }
+
   // --- Application Initialization ---
   async function init() {
+    updateThemeIcon();
     const todayStr = new Date().toISOString().split('T')[0];
     if (elements.eventDate) {
       elements.eventDate.min = todayStr;
@@ -405,6 +438,25 @@
     if (elements.btnHeaderNewEvent) elements.btnHeaderNewEvent.addEventListener('click', () => setActiveView('create'));
     if (elements.btnCancelCreate) elements.btnCancelCreate.addEventListener('click', () => setActiveView('timeline'));
     if (elements.btnHeaderPrint) elements.btnHeaderPrint.addEventListener('click', () => window.print());
+
+    // Theme Toggle Handler
+    if (elements.btnThemeToggle) {
+      elements.btnThemeToggle.addEventListener('click', toggleTheme);
+    }
+
+    // System Dark Mode Preference Auto-Sync (if user hasn't explicitly overridden)
+    if (window.matchMedia) {
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+        if (!localStorage.getItem('plangenie_theme')) {
+          if (e.matches) {
+            document.documentElement.classList.add('dark');
+          } else {
+            document.documentElement.classList.remove('dark');
+          }
+          updateThemeIcon();
+        }
+      });
+    }
 
     // Mobile Drawer Toggle
     const btnMobileToggle = document.getElementById('btnMobileMenuToggle');

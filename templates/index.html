@@ -71,6 +71,20 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,300..900;1,6..12,300..900&family=Literata:ital,opsz,wght@0,7..72,300..900;1,7..72,300..900&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
   
+  <!-- Early Theme Detection Script to prevent FOUC -->
+  <script>
+    (function () {
+      try {
+        var savedTheme = localStorage.getItem('plangenie_theme');
+        if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      } catch (e) {}
+    })();
+  </script>
+
   <!-- Tailwind CSS Configuration with Terra Theme Tokens -->
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
   <script>
@@ -79,30 +93,30 @@
       theme: {
         extend: {
           colors: {
-            "primary": "#4a7c59",
-            "primary-hover": "#3d6749",
-            "primary-container": "#c8e8d0",
-            "on-primary": "#ffffff",
-            "on-primary-container": "#112e1b",
-            "background": "#faf6f0",
-            "surface": "#faf6f0",
-            "surface-container-lowest": "#ffffff",
-            "surface-container-low": "#f5f1ea",
-            "surface-container": "#f0ece4",
-            "surface-container-high": "#eae6de",
-            "surface-container-highest": "#e4e0d8",
-            "tertiary": "#705c30",
-            "tertiary-container": "#f8e0a8",
-            "on-tertiary": "#ffffff",
-            "on-tertiary-container": "#291f04",
-            "error": "#b83230",
-            "error-container": "#ffdad8",
-            "on-error": "#ffffff",
-            "on-error-container": "#690005",
-            "outline": "#74796e",
-            "outline-variant": "#c4c8bc",
-            "on-surface": "#2e3230",
-            "on-surface-variant": "#5c615c"
+            "primary": "rgb(var(--color-primary) / <alpha-value>)",
+            "primary-hover": "rgb(var(--color-primary-hover) / <alpha-value>)",
+            "primary-container": "rgb(var(--color-primary-container) / <alpha-value>)",
+            "on-primary": "rgb(var(--color-on-primary) / <alpha-value>)",
+            "on-primary-container": "rgb(var(--color-on-primary-container) / <alpha-value>)",
+            "background": "rgb(var(--color-background) / <alpha-value>)",
+            "surface": "rgb(var(--color-surface) / <alpha-value>)",
+            "surface-container-lowest": "rgb(var(--color-surface-container-lowest) / <alpha-value>)",
+            "surface-container-low": "rgb(var(--color-surface-container-low) / <alpha-value>)",
+            "surface-container": "rgb(var(--color-surface-container) / <alpha-value>)",
+            "surface-container-high": "rgb(var(--color-surface-container-high) / <alpha-value>)",
+            "surface-container-highest": "rgb(var(--color-surface-container-highest) / <alpha-value>)",
+            "tertiary": "rgb(var(--color-tertiary) / <alpha-value>)",
+            "tertiary-container": "rgb(var(--color-tertiary-container) / <alpha-value>)",
+            "on-tertiary": "rgb(var(--color-on-tertiary) / <alpha-value>)",
+            "on-tertiary-container": "rgb(var(--color-on-tertiary-container) / <alpha-value>)",
+            "error": "rgb(var(--color-error) / <alpha-value>)",
+            "error-container": "rgb(var(--color-error-container) / <alpha-value>)",
+            "on-error": "rgb(var(--color-on-error) / <alpha-value>)",
+            "on-error-container": "rgb(var(--color-on-error-container) / <alpha-value>)",
+            "outline": "rgb(var(--color-outline) / <alpha-value>)",
+            "outline-variant": "rgb(var(--color-outline-variant) / <alpha-value>)",
+            "on-surface": "rgb(var(--color-on-surface) / <alpha-value>)",
+            "on-surface-variant": "rgb(var(--color-on-surface-variant) / <alpha-value>)"
           },
           borderRadius: {
             "DEFAULT": "12px",
@@ -118,9 +132,9 @@
             "body": ["Nunito Sans", "sans-serif"]
           },
           boxShadow: {
-            "terra-soft": "0 4px 20px rgba(46, 50, 48, 0.06)",
-            "terra-subtle": "0 2px 8px rgba(46, 50, 48, 0.04)",
-            "terra-hover": "0 6px 24px rgba(46, 50, 48, 0.08)",
+            "terra-soft": "0 4px 20px rgba(0, 0, 0, 0.06)",
+            "terra-subtle": "0 2px 8px rgba(0, 0, 0, 0.04)",
+            "terra-hover": "0 6px 24px rgba(0, 0, 0, 0.09)",
             "terra-btn": "0 2px 10px rgba(74, 124, 89, 0.18)"
           }
         }
@@ -129,12 +143,72 @@
   </script>
 
   <style>
+    :root {
+      --color-primary: 74 124 89;
+      --color-primary-hover: 61 103 73;
+      --color-primary-container: 200 232 208;
+      --color-on-primary: 255 255 255;
+      --color-on-primary-container: 17 46 27;
+      --color-background: 250 246 240;
+      --color-surface: 250 246 240;
+      --color-surface-container-lowest: 255 255 255;
+      --color-surface-container-low: 245 241 234;
+      --color-surface-container: 240 236 228;
+      --color-surface-container-high: 234 230 222;
+      --color-surface-container-highest: 228 224 216;
+      --color-tertiary: 112 92 48;
+      --color-tertiary-container: 248 224 168;
+      --color-on-tertiary: 255 255 255;
+      --color-on-tertiary-container: 41 31 4;
+      --color-error: 184 50 48;
+      --color-error-container: 255 218 216;
+      --color-on-error: 255 255 255;
+      --color-on-error-container: 105 0 5;
+      --color-outline: 116 121 110;
+      --color-outline-variant: 196 200 188;
+      --color-on-surface: 46 50 48;
+      --color-on-surface-variant: 92 97 92;
+      --card-shadow: 0 4px 20px rgba(46, 50, 48, 0.05);
+      --card-hover-shadow: 0 6px 24px rgba(46, 50, 48, 0.08);
+      --btn-shadow: 0 2px 10px rgba(74, 124, 89, 0.18);
+    }
+
+    .dark {
+      --color-primary: 108 178 129;
+      --color-primary-hover: 126 196 147;
+      --color-primary-container: 32 66 44;
+      --color-on-primary: 15 41 24;
+      --color-on-primary-container: 174 228 190;
+      --color-background: 24 28 25;
+      --color-surface: 24 28 25;
+      --color-surface-container-lowest: 18 21 19;
+      --color-surface-container-low: 33 38 34;
+      --color-surface-container: 42 49 43;
+      --color-surface-container-high: 52 61 54;
+      --color-surface-container-highest: 62 73 65;
+      --color-tertiary: 221 196 141;
+      --color-tertiary-container: 70 56 26;
+      --color-on-tertiary: 39 31 8;
+      --color-on-tertiary-container: 250 227 180;
+      --color-error: 224 109 106;
+      --color-error-container: 74 25 24;
+      --color-on-error: 255 255 255;
+      --color-on-error-container: 255 218 216;
+      --color-outline: 142 149 139;
+      --color-outline-variant: 66 74 67;
+      --color-on-surface: 229 233 228;
+      --color-on-surface-variant: 164 173 163;
+      --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+      --card-hover-shadow: 0 6px 24px rgba(0, 0, 0, 0.45);
+      --btn-shadow: 0 2px 10px rgba(108, 178, 129, 0.25);
+    }
+
     @layer base {
       html, body {
         margin: 0;
         padding: 0;
-        background-color: #faf6f0;
-        color: #2e3230;
+        background-color: rgb(var(--color-background));
+        color: rgb(var(--color-on-surface));
         font-family: 'Nunito Sans', sans-serif;
         line-height: 1.65;
         -webkit-font-smoothing: antialiased;
@@ -149,36 +223,41 @@
       height: 6px;
     }
     ::-webkit-scrollbar-track {
-      background: #faf6f0;
+      background: rgb(var(--color-background));
     }
     ::-webkit-scrollbar-thumb {
-      background: #c4c8bc;
+      background: rgb(var(--color-outline-variant));
       border-radius: 9999px;
+    }
+
+    .dark select option {
+      background-color: rgb(33 38 34);
+      color: rgb(229 233 228);
     }
 
     /* Terra Design System Core Utilities (No Pill Buttons: rounded-[12px]) */
     .terra-card {
-      background-color: #f5f1ea;
-      border: 1px solid rgba(196, 200, 188, 0.35);
+      background-color: rgb(var(--color-surface-container-low));
+      border: 1px solid rgba(var(--color-outline-variant) / 0.35);
       border-radius: 12px;
       padding: 1.5rem;
-      box-shadow: 0 4px 20px rgba(46, 50, 48, 0.05);
+      box-shadow: var(--card-shadow);
       transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     .terra-card:hover {
       transform: translateY(-2px);
-      box-shadow: 0 6px 24px rgba(46, 50, 48, 0.08);
-      border-color: rgba(74, 124, 89, 0.25);
+      box-shadow: var(--card-hover-shadow);
+      border-color: rgba(var(--color-primary) / 0.35);
     }
 
     .terra-btn-primary {
-      background-color: #4a7c59;
-      color: #ffffff;
+      background-color: rgb(var(--color-primary));
+      color: rgb(var(--color-on-primary));
       font-weight: 600;
       border-radius: 12px;
       padding: 0.6rem 1.25rem;
-      box-shadow: 0 2px 10px rgba(74, 124, 89, 0.18);
+      box-shadow: var(--btn-shadow);
       transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
       display: inline-flex;
       align-items: center;
@@ -186,18 +265,18 @@
     }
 
     .terra-btn-primary:hover {
-      background-color: #3d6749;
+      background-color: rgb(var(--color-primary-hover));
       transform: translateY(-1px);
-      box-shadow: 0 4px 14px rgba(74, 124, 89, 0.24);
+      box-shadow: var(--btn-shadow);
     }
 
     .terra-btn-secondary {
-      background-color: #f5f1ea;
-      color: #4a7c59;
+      background-color: rgb(var(--color-surface-container-low));
+      color: rgb(var(--color-primary));
       font-weight: 600;
       border-radius: 12px;
       padding: 0.55rem 1.15rem;
-      border: 1px solid rgba(74, 124, 89, 0.25);
+      border: 1px solid rgba(var(--color-primary) / 0.3);
       transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
       display: inline-flex;
       align-items: center;
@@ -205,17 +284,17 @@
     }
 
     .terra-btn-secondary:hover {
-      background-color: #f0ece4;
-      border-color: rgba(74, 124, 89, 0.45);
+      background-color: rgb(var(--color-surface-container));
+      border-color: rgba(var(--color-primary) / 0.55);
       transform: translateY(-1px);
     }
 
     .terra-input {
-      background-color: #f5f1ea;
-      border: 1px solid rgba(196, 200, 188, 0.45);
+      background-color: rgb(var(--color-surface-container-low));
+      border: 1px solid rgba(var(--color-outline-variant) / 0.45);
       border-radius: 12px;
       padding: 0.6rem 1rem;
-      color: #2e3230;
+      color: rgb(var(--color-on-surface));
       font-size: 0.875rem;
       line-height: 1.5;
       transition: all 0.2s ease;
@@ -223,17 +302,17 @@
 
     .terra-input:focus {
       outline: none;
-      background-color: #ffffff;
-      border-color: #4a7c59;
-      box-shadow: 0 0 0 3px rgba(74, 124, 89, 0.15);
+      background-color: rgb(var(--color-surface-container-lowest));
+      border-color: rgb(var(--color-primary));
+      box-shadow: 0 0 0 3px rgba(var(--color-primary) / 0.2);
     }
 
     /* Modal Backdrop */
     .modal-backdrop {
       position: fixed;
       inset: 0;
-      background-color: rgba(46, 50, 48, 0.45);
-      backdrop-filter: blur(5px);
+      background-color: rgba(18, 22, 19, 0.65);
+      backdrop-filter: blur(6px);
       display: none;
       align-items: center;
       justify-content: center;
@@ -259,14 +338,14 @@
 
     .toast {
       pointer-events: auto;
-      background-color: #f5f1ea;
-      border: 1px solid rgba(196, 200, 188, 0.6);
+      background-color: rgb(var(--color-surface-container-low));
+      border: 1px solid rgba(var(--color-outline-variant) / 0.6);
       border-radius: 12px;
       padding: 0.85rem 1.25rem;
-      box-shadow: 0 6px 20px rgba(46, 50, 48, 0.1);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
       font-size: 0.875rem;
       font-weight: 600;
-      color: #2e3230;
+      color: rgb(var(--color-on-surface));
       display: flex;
       align-items: center;
       gap: 0.75rem;
@@ -274,13 +353,146 @@
       max-width: 380px;
     }
 
-    .toast-success { border-left: 4px solid #4a7c59; color: #1e4529; }
-    .toast-error { border-left: 4px solid #b83230; color: #8a1d1b; }
-    .toast-info { border-left: 4px solid #705c30; color: #473919; }
+    .toast-success { border-left: 4px solid rgb(var(--color-primary)); color: rgb(var(--color-primary)); }
+    .toast-error { border-left: 4px solid rgb(var(--color-error)); color: rgb(var(--color-error)); }
+    .toast-info { border-left: 4px solid rgb(var(--color-tertiary)); color: rgb(var(--color-tertiary)); }
 
     @keyframes terraFadeIn {
       from { opacity: 0; transform: translateY(8px); }
       to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Direct Dark Mode Class Overrides for Flawless Theme Consistency */
+    html.dark, html.dark body {
+      background-color: #181c19 !important;
+      color: #e5e9e4 !important;
+    }
+
+    html.dark aside#sidebarDrawer {
+      background-color: #181c19 !important;
+      border-right-color: rgba(180, 190, 180, 0.16) !important;
+    }
+
+    html.dark header {
+      background-color: rgba(24, 28, 25, 0.95) !important;
+      border-bottom-color: rgba(180, 190, 180, 0.16) !important;
+    }
+
+    html.dark main {
+      background-color: #181c19 !important;
+    }
+
+    html.dark .bg-surface {
+      background-color: #181c19 !important;
+    }
+
+    html.dark .bg-surface-container-lowest {
+      background-color: #141715 !important;
+    }
+
+    html.dark .bg-surface-container-low {
+      background-color: #212622 !important;
+    }
+
+    html.dark .bg-surface-container {
+      background-color: #2a312b !important;
+    }
+
+    html.dark .bg-surface-container-high {
+      background-color: #343d36 !important;
+    }
+
+    html.dark .bg-surface-container-highest {
+      background-color: #3e4941 !important;
+    }
+
+    html.dark .text-on-surface {
+      color: #e5e9e4 !important;
+    }
+
+    html.dark .text-on-surface-variant {
+      color: #a4ada3 !important;
+    }
+
+    html.dark .text-primary {
+      color: #6cb281 !important;
+    }
+
+    html.dark .bg-primary {
+      background-color: #6cb281 !important;
+      color: #0f2918 !important;
+    }
+
+    html.dark .bg-primary\/10 {
+      background-color: rgba(108, 178, 129, 0.14) !important;
+    }
+
+    html.dark .bg-primary\/20 {
+      background-color: rgba(108, 178, 129, 0.24) !important;
+    }
+
+    html.dark .text-tertiary {
+      color: #ddc48d !important;
+    }
+
+    html.dark .bg-tertiary\/10 {
+      background-color: rgba(221, 196, 141, 0.14) !important;
+    }
+
+    html.dark .border-outline-variant\/30,
+    html.dark .border-outline-variant\/40,
+    html.dark .border-outline-variant\/20,
+    html.dark .border-outline-variant {
+      border-color: rgba(180, 190, 180, 0.16) !important;
+    }
+
+    html.dark .border-primary\/20,
+    html.dark .border-primary\/30,
+    html.dark .border-primary\/40 {
+      border-color: rgba(108, 178, 129, 0.3) !important;
+    }
+
+    html.dark input, 
+    html.dark select, 
+    html.dark textarea {
+      background-color: #212622 !important;
+      color: #e5e9e4 !important;
+      border-color: rgba(180, 190, 180, 0.22) !important;
+    }
+
+    html.dark input:focus, 
+    html.dark select:focus, 
+    html.dark textarea:focus {
+      background-color: #2a312b !important;
+      border-color: #6cb281 !important;
+      box-shadow: 0 0 0 3px rgba(108, 178, 129, 0.22) !important;
+    }
+
+    html.dark input::placeholder,
+    html.dark textarea::placeholder {
+      color: #788277 !important;
+    }
+
+    html.dark .terra-card {
+      background-color: #212622 !important;
+      border-color: rgba(180, 190, 180, 0.16) !important;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35) !important;
+    }
+
+    html.dark .terra-card:hover {
+      border-color: rgba(108, 178, 129, 0.35) !important;
+      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.45) !important;
+    }
+
+    html.dark .terra-btn-secondary {
+      background-color: #212622 !important;
+      color: #6cb281 !important;
+      border-color: rgba(108, 178, 129, 0.35) !important;
+    }
+
+    html.dark .terra-btn-secondary:hover {
+      background-color: #2a312b !important;
+      border-color: rgba(108, 178, 129, 0.55) !important;
     }
 
     @media print {
@@ -398,6 +610,11 @@
         <button id="btnHeaderNewEvent" class="terra-btn-primary text-xs" type="button">
           <span class="material-symbols-outlined text-base">add</span>
           <span class="hidden sm:inline">New Event</span>
+        </button>
+
+        <!-- Theme Toggle Button (Rooted Warmth Light / Dark Mode) -->
+        <button id="btnThemeToggle" class="w-9 h-9 rounded-[12px] bg-surface-container-low hover:bg-surface-container flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors border border-outline-variant/30" type="button" title="Switch between Light and Dark mode" aria-label="Toggle Theme">
+          <span class="material-symbols-outlined text-lg" id="themeIcon">dark_mode</span>
         </button>
 
         <button id="btnHeaderPrint" class="w-9 h-9 rounded-[12px] bg-surface-container-low hover:bg-surface-container flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors border border-outline-variant/30" type="button" title="Print or Save PDF">
